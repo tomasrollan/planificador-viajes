@@ -10,3 +10,4 @@
   }catch(e){}
 })();
 render();
+try{ filesGc(); }catch(e){}

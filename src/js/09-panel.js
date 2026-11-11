@@ -25,7 +25,7 @@ function clientCard(c){
   return '<div class="card ccard"><div class="row between" style="align-items:flex-start"><div style="min-width:0"><h4 style="font-size:17px;font-weight:800">'+esc(c.name)+'</h4><div class="muted small" style="margin-top:4px">'+I('calendar')+' '+fmtShort(c.start)+' → '+fmtShort(c.end)+' · <b>'+tripWhen(c)+'</b></div></div><span class="row" style="gap:6px;justify-content:flex-end">'+destChips(c)+'</span></div>'+
    '<div class="muted small" style="margin:6px 0 10px">'+I('hotel')+' '+esc(hotelLine(c)||'sin hotel')+' · '+c.travelers.length+' viajeros · '+esc(MODES[c.mode])+(hasDest(c,'wdw')?' · '+esc(PLANS[c.plan].n):'')+'</div>'+
    '<div class="row" style="gap:6px">'+resChip(c)+'<span class="chip ok">'+pg.res+(pg.res===1?' reservada':' reservadas')+'</span>'+(form?'<span class="chip warn">'+I('user')+' formulario recibido</span>':'')+(algList(c).length?'<span class="chip warn">'+I('shield')+' alergias</span>':'')+(nc?'<span class="chip warn">'+nc+(nc===1?' caso abierto':' casos abiertos')+'</span>':'')+'</div>'+
-   '<div class="cprog"><div class="meter"><i style="width:'+pg.pct+'%"></i></div><span>'+pg.filled+' de '+pg.cap+' comidas elegidas</span></div>'+
+   budCard(c,pg)+
    '<div class="row" style="margin-top:12px"><a class="btn" href="#cliente-'+c.id+'">'+I('calendar')+' Abrir agenda</a><button class="btn ice" data-viewas="'+c.id+'">Ver como cliente</button></div></div>';
 }
 function clientsGrid(){
@@ -66,7 +66,7 @@ function vPanel(){
 function vClienteEdit(){
   var c=client(UI.cid); if(!c) return '<main class="wrap"><div class="empty">Cliente no encontrado. <a href="#panel">Volver</a></div></main>';
   var pend=casesOf(c.id).filter(isOpen).length;
-  var tabs=[['agenda','calendar','Agenda'],['datos','user','Datos del viaje'],['link','link','Link y PIN'],['trans','bus','Transporte'],['pedidos','chat','Casos'+(pend?' ('+pend+')':'')],['hist','clock','Historial']];
+  var tabs=[['agenda','calendar','Agenda'],['datos','user','Datos del viaje'],['link','link','Link y PIN'],['trans','bus','Transporte'],['pres','bag','Presupuesto'],['pedidos','chat','Casos'+(pend?' ('+pend+')':'')],['hist','clock','Historial']];
   var h='<main class="wrap"><div style="display:flex;flex-direction:column;gap:14px"><div class="row between"><div><a href="#panel" class="small" style="font-weight:700;text-decoration:none">'+I('back')+' Panel</a><h2 style="font-size:26px;font-weight:900;margin-top:6px">'+esc(c.name)+'</h2><div class="muted small">'+fmtShort(c.start)+' → '+fmtShort(c.end)+' · '+nights(c)+' noches · '+esc(destsLabel(c))+(hotelLine(c)?' · '+esc(hotelLine(c)):'')+(hasDest(c,'wdw')?' · '+esc(PLANS[c.plan].n):'')+'</div></div><div class="row" style="gap:8px"><button class="btn line" data-dupclient="'+c.id+'" title="Crea otro viaje con el mismo destino, hotel, plan y agenda de ideas (sin viajeros ni alergias)">'+I('copy')+' Duplicar</button><button class="btn ice" data-viewas="'+c.id+'">Ver como cliente</button></div></div>'+
    '<div class="tabs">'+tabs.map(function(t){return '<button data-tab="'+t[0]+'" class="'+(UI.tab===t[0]?'on':'')+'">'+I(t[1])+' '+t[2]+'</button>'}).join('')+'</div></div>';
   if(UI.tab==='agenda') h+=agentSummary(c)+plannerSection(c);
@@ -74,6 +74,7 @@ function vClienteEdit(){
   if(UI.tab==='link') h+=linkPanel(c);
   if(UI.tab==='trans') h+=transportSection(c,true);
   if(UI.tab==='pedidos') h+=pedidosPanel(c);
+  if(UI.tab==='pres') h+=budgetPanel(c);
   if(UI.tab==='hist') h+=historyPanel(c);
   return h+'</main>';
 }

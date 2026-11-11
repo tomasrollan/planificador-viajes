@@ -29,6 +29,23 @@ function demo(){
   m.days[6].slots.dinner={rid:'uor-marvel-character-dinner',state:'por_reservar',time:'19:00',conf:'',by:'agus'};
   function K(n,cid,title,type,prio,st,hAgo,text,ref,extra){ var k={id:uid(),num:n,cid:cid,title:title,type:type,priority:prio,status:st,created:now-hAgo*H,updated:now-hAgo*H,due:now-hAgo*H+PRIO[prio][2]*H,source:'cliente',ref:ref||null,thread:[{id:uid(),by:'cliente',kind:'msg',text:text,at:now-hAgo*H}]};
     (extra||[]).forEach(function(m,i){ m.id=uid(); m.at=now-(hAgo-(i+1)*Math.min(3,hAgo/3))*H; k.thread.push(m); if(m.kind!=='nota') k.updated=m.at; }); return k; }
+  function IT(c,cat,title,date,amount,status,o){ o=o||{}; c.items=c.items||[]; c.items.push({id:uid(),cat:cat,title:title,date:date||'',amount:amount,status:status,paid:!!o.paid,conf:o.conf||'',file:null,visible:!!o.visible,credits:o.credits||0,note:o.note||'',at:now,by:'agus'}); }
+  a.budget={total:8000,cur:'USD',cats:{hotel:3500},share:false,autoMeals:true};
+  IT(a,'hotel','Disney\'s Riviera Resort · 5 noches',s,3150,'confirmado',{paid:true,conf:'WDW-71820',visible:true});
+  IT(a,'parques','Entradas Magic Kingdom, EPCOT y Hollywood Studios',addDays(s,0),1280,'confirmado',{conf:'TKT-5532',visible:true});
+  IT(a,'comida','Liberty Tree Tavern · cena',addDays(s,0),0,'confirmado',{conf:'E4F7-2201',credits:1,visible:true});
+  IT(a,'transporte','Traslado aeropuerto ↔ hotel (Mears)',s,95,'estimado');
+  g.budget={total:9500,cur:'USD',cats:{},share:true,autoMeals:true};
+  IT(g,'hotel','Disney\'s Contemporary Resort · 6 noches',addDays(s,90),3400,'confirmado',{paid:true,conf:'WDW-90312',visible:true});
+  IT(g,'parques','Entradas 5 días con Park Hopper',addDays(s,90),1620,'confirmado',{conf:'TKT-8841',visible:true});
+  IT(g,'excursion','Fireworks Dessert Party',addDays(s,92),240,'estimado');
+  IT(g,'comida','Be Our Guest · cena',addDays(s,91),0,'confirmado',{conf:'D-55410',credits:2,visible:true});
+  u.budget={total:7000,cur:'USD',cats:{},share:false,autoMeals:false};
+  IT(u,'hotel','Loews Portofino Bay Hotel · 5 noches',addDays(s,120),3100,'confirmado',{paid:true,conf:'UOR-3321',visible:true});
+  IT(u,'parques','Entradas 3 parques con Express',addDays(s,120),1650,'estimado');
+  m.budget={total:12000,cur:'USD',cats:{hotel:6000},share:false,autoMeals:false};
+  IT(m,'hotel','All-Star Sports · 5 noches',m5,1450,'estimado');
+  IT(m,'hotel','Cabana Bay Beach Resort · 4 noches',addDays(m5,5),1300,'estimado');
   var cases=[
     K(1008,'c4','Conseguir mesa en Toothsome','Consulta','normal','nuevo',12,'Vimos que Toothsome es difícil de reservar. ¿Lo pueden intentar para el segundo día?'),
     K(1001,'c1','Pasar la cena de Liberty Tree a las 18:00','Cambio de reserva','alta','nuevo',5,'¿Se puede pasar la cena a las 18:00? Los chicos se duermen temprano.',{date:a.days[0].date,slot:'dinner'}),

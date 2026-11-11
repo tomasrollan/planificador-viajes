@@ -124,12 +124,14 @@ function planFields(c){
   var o='';
   if(hasDest(c,'wdw')) o+='<div><label class="f">Plan de comidas'+(hasDest(c,'uor')?' de Disney':'')+'</label><select id="d-plan">'+Object.keys(PLANS).map(function(k){return '<option value="'+k+'"'+(c.plan===k?' selected':'')+'>'+PLANS[k].n+'</option>'}).join('')+'</select></div>';
   if(hasDest(c,'uor')) o+='<div><label class="f">Tarjeta de comidas de Universal (US$)</label><input type="number" min="0" step="10" id="d-card" value="'+(+c.cardUSD||0)+'" placeholder="0 si no hay"><div class="tiny muted" style="margin-top:4px">Universal no tiene plan de comidas. Cargá el monto solo si el paquete incluye una tarjeta.</div></div>';
+  o+='<div><label class="f" for="d-budget">Presupuesto total del cliente (US$)</label><input type="text" inputmode="decimal" id="d-budget" value="'+(BC.hasBudget(c)?esc(String(c.budget.total).replace('.',',')):'')+'" placeholder="Hotel, reservas y excursiones"><div class="tiny muted" style="margin-top:4px">Alimenta la barra de presupuesto del panel. El detalle se carga en la pestaña «Presupuesto».</div></div>';
   return o;
 }
 function readDestFields(c){
   var gv=function(id){ var e=$(id); return e?e.value:null; };
   var h1=gv('#d-hotel'); if(h1!==null) c.hotel=h1; var h2=gv('#d-hotelU'); if(h2!==null) c.hotelU=h2;
   var p=gv('#d-plan'); if(p!==null) c.plan=p; var cd=gv('#d-card'); if(cd!==null) c.cardUSD=Math.max(0,+cd||0);
+  var bg=gv('#d-budget'); if(bg!==null){ var bv=BC.parseAmount(bg); if(bv>0&&(!c.budget||c.budget.total!==bv)) budInit(c,bv); }
   if(hasDest(c,'wdw')&&hasDest(c,'uor')){ var a=gv('#d-sw-start'),b=gv('#d-sw-end'),x=gv('#d-su-start'),y=gv('#d-su-end'); c.segs={}; if(a&&b&&b>=a) c.segs.wdw={start:a,end:b}; if(x&&y&&y>=x) c.segs.uor={start:x,end:y}; if(!c.segs.wdw&&!c.segs.uor) c.segs=null; }
   else c.segs=null;
 }

@@ -78,16 +78,22 @@ function vSesion(){
    mealLine(r,cur.m[0])+
    '<div class="row" style="margin-top:14px"><a class="btn" target="_blank" rel="noopener" href="'+esc(url)+'">Abrir reserva oficial '+I('ext')+'</a>'+(r.dest==='uor'&&r.murl?'<a class="btn line" target="_blank" rel="noopener" href="'+esc(r.murl)+'">Menú oficial '+I('ext')+'</a>':'')+'</div>'+
    '<div class="sesform"><div class="grid g2" style="gap:12px"><div><label class="f">Hora reservada (la que te confirmaron)</label><input type="time" id="ses-time" value=""><div id="ses-warn" class="tiny" style="margin-top:4px">'+timeWarnHtml(r,cur.d.date,s.time)+'</div></div><div><label class="f">N.º de confirmación</label><input type="text" id="ses-conf" value="'+esc(s.conf||'')+'" placeholder="Ej: 123456789"></div></div>'+
-   '<label class="small" style="display:flex;gap:8px;align-items:center;margin-top:12px;font-weight:600"><input type="checkbox" id="ses-lock"'+(c.mode!=='auto'?' checked':'')+'> Bloquear para que el cliente solo pueda pedir cambios</label>'+
+   '<label class="small" style="display:flex;gap:8px;align-items:center;margin-top:12px;font-weight:600"><input type="checkbox" id="ses-lock"'+(c.mode!=='auto'?' checked':'')+'> Bloquear para que el cliente solo pueda pedir cambios</label>'+sesCostHtml(c,r,cur.m[0])+
    '<div class="row" style="margin-top:14px"><button class="btn" data-sessave="'+sesKey(cur)+'">'+I('check')+' Guardar y siguiente</button><button class="btn line" data-sesskip="'+sesKey(cur)+'">Saltear por ahora</button><button class="btn line" data-sesno="'+sesKey(cur)+'">No había lugar</button></div></div></div>';
   var up=left.filter(function(x){return sesKey(x)!==sesKey(cur)}).slice(0,3);
   if(up.length) h+='<div class="small muted" style="margin-top:14px"><b>Siguen:</b> '+up.map(function(x){ return esc(x.r.name)+' ('+esc(x.c.name)+')'; }).join(' · ')+'</div>';
   return h+'</section></main>';
 }
 function sesFind(key){ var p=key.split('|'), c=client(p[0]); if(!c) return null; var d=c.days.filter(function(x){return x.date===p[1]})[0], s=d&&d.slots[p[2]]; return s?{c:c,d:d,m:p[2],s:s,r:RID[s.rid]}:null; }
+function sesCostHtml(c,r,mk){
+  var plan=budHasPlan(c)&&r.dest!=='uor', cr=plan?Rules.creditsOf(r,mk):0;
+  return '<details class="sesopt"'+(plan?' open':'')+'><summary>'+I('bag')+' Sumar al presupuesto <span class="muted">(opcional)</span></summary><div class="grid g2" style="gap:12px;margin-top:10px"><div><label class="f" for="ses-cost">Costo de esta reserva (US$)</label><input type="text" inputmode="decimal" id="ses-cost" placeholder="Ej: 120 (si hay depósito o paquete)"></div>'+
+   (plan?'<div><label class="f" for="ses-cred">Créditos del plan que usa (por persona)</label><input type="number" id="ses-cred" min="0" max="99" value="'+cr+'"></div>':'')+'</div></details>';
+}
 function sesSave(key){
   var x=sesFind(key); if(!x) return; var time=$('#ses-time').value, conf=($('#ses-conf').value||'').trim(); if(!time){ toast('Poné la hora que te dieron'); var ti=$('#ses-time'); if(ti) ti.focus(); return; }
-  x.s.state='reservada'; x.s.time=time; x.s.conf=conf; x.s.locked=!!$('#ses-lock').checked; x.s.by='agus'; save();
+  x.s.state='reservada'; x.s.time=time; x.s.conf=conf; x.s.locked=!!$('#ses-lock').checked; x.s.by='agus';
+  var cost=BC.parseAmount(($('#ses-cost')||{}).value)||0, cred=Math.max(0,Math.floor(+(($('#ses-cred')||{}).value)||0)); budFromSlot(x.c,x.d,x.m,x.r,conf,cost,cred); save();
   logAct(x.c.id,'Reservó '+x.r.name+' · '+fmtShort(x.d.date)+' '+mealLabel(x.m)+(time?' a las '+time:'')+(conf?' (conf. '+conf+')':''),'reserva'); UI.ses.done++; toast('Reserva guardada'); render(); window.scrollTo(0,0);
 }
 function sesNoSpot(key){
@@ -107,7 +113,7 @@ function historyPanel(c){
 /* ---------- duplicar cliente ---------- */
 function dupClient(id){
   var c=client(id); if(!c) return; var n=JSON.parse(JSON.stringify(c));
-  n.id=uid(); n.token=genToken('cliente'); n.pin=genPin(); n.name=c.name+' (copia)'; n.phone=''; n.notes=''; n.intake=null; n.requests=[]; n.favs={}; n.log=[]; n.travelers=[{id:'t1',name:'Viajero 1',type:'adulto',allergies:''}];
+  n.id=uid(); n.token=genToken('cliente'); n.pin=genPin(); n.name=c.name+' (copia)'; n.phone=''; n.notes=''; n.intake=null; n.requests=[]; n.favs={}; n.log=[]; n.budget=null; n.items=[]; n.travelers=[{id:'t1',name:'Viajero 1',type:'adulto',allergies:''}];
   n.days.forEach(function(d){ MEALS.forEach(function(m){ var s=d.slots[m[0]]; if(s) d.slots[m[0]]={rid:s.rid,state:'idea',time:'',conf:'',by:'agus',locked:false,note:'',sug:s.sug}; }); });
   repo.addClient(n); logAct(n.id,'Creado como copia de '+c.name,'evento'); save(); UI.tab='datos'; location.hash='cliente-'+n.id;
   toast('Copia creada: cargá los viajeros (con sus alergias) y las fechas');
@@ -121,7 +127,7 @@ function quickPreview(){
   if(!t.trim()){ el.innerHTML='<div class="tiny muted">Pegá el mensaje y te muestro qué entendí antes de crear nada.</div>'; if(btn) btn.disabled=true; return; }
   function row(l,v){ return '<div class="qrow"><span class="tiny muted">'+l+'</span><b>'+(v?esc(v):'<span class="muted" style="font-weight:600">no encontré</span>')+'</b></div>'; }
   var tv=(r.adults||r.kids)?(r.adults+(r.adults===1?' adulto':' adultos')+(r.kids?' · '+r.kids+(r.kids===1?' niño':' niños'):'')):'';
-  el.innerHTML=row('Nombre',r.name)+row('Destino',r.dests.map(function(d){return DESTS[d].s}).join(' + '))+row('Fechas',r.start&&r.end?fmtShort(r.start)+' → '+fmtShort(r.end):'')+row('Viajeros',tv)+row('Teléfono',r.phone)+(r.hotel?row('Hotel',r.hotel.name):'')+(r.plan?row('Plan de comidas',PLANS[r.plan].n):'')+
+  el.innerHTML=row('Nombre',r.name)+row('Destino',r.dests.map(function(d){return DESTS[d].s}).join(' + '))+row('Fechas',r.start&&r.end?fmtShort(r.start)+' → '+fmtShort(r.end):'')+row('Viajeros',tv)+row('Teléfono',r.phone)+(r.hotel?row('Hotel',r.hotel.name):'')+(r.plan?row('Plan de comidas',PLANS[r.plan].n):'')+(r.budget?row('Presupuesto','US$ '+r.budget.toLocaleString('es-AR')):'')+
    (r.allergyLines.length?'<div class="notice warn" style="margin-top:8px">'+I('shield')+'<div><b>Menciona alergias o dietas.</b> Van a la nota del cliente; después cargalas en cada viajero.</div></div>':'');
   if(btn) btn.disabled=!r.hasAny;
 }
@@ -130,6 +136,7 @@ function quickCreate(){
   var kind=r.dests.length===2?'both':(r.dests[0]||'wdw'); var tv=[]; for(var i=0;i<r.adults;i++) tv.push({id:'t'+(tv.length+1),name:'Viajero '+(tv.length+1),type:'adulto',allergies:''}); for(var j=0;j<r.kids;j++) tv.push({id:'t'+(tv.length+1),name:'Viajero '+(tv.length+1),type:'niño',allergies:''});
   var note=(r.allergyLines.length?'Del mensaje original (asignar a cada viajero): '+r.allergyLines.join(' '):'');
   var nc=createTrip(kind,{name:r.name,start:r.start,end:r.end,phone:r.phone,travelers:tv.length?tv:null,hotel:r.hotel,plan:r.plan,notes:note,quick:true});
+  if(r.budget>0) budInit(nc,r.budget);
   logAct(nc.id,'Alta rápida desde un mensaje pegado','evento'); save();
   toast('Cliente creado. Revisá y completá lo que falta'+(r.missing.length?' ('+r.missing.join(', ')+')':''));
 }

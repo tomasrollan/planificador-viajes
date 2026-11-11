@@ -313,7 +313,7 @@ html[data-theme="uor"]{
   --bg:#f2f3f5; --ink:#222; --muted:#5a5a5a; --line:#d5d5d5;
   --navy:#162b75; --blue:#0368d9; --blue2:#036ce2; --ice:#eaf2fd; --ice2:#f6f9fe; --gold:#ffc72c; --gold-soft:#fff6d6;
   --blue-rgb:3,104,217; --navy-rgb:22,43,117; --acc2:#ffc72c;
-  --hero-grad:linear-gradient(135deg,#162b75 0%,#0368d9 100%);
+  --hero-grad:linear-gradient(135deg,#0c1a4d 0%,#162b75 55%,#2a3f9e 100%);
   --fh:'Avenir Next','Avenir Next W05','Helvetica Neue',Helvetica,Arial,sans-serif;
 }
 html[data-theme="uor"] body{font-family:'Avenir Next','Avenir Next W05','Helvetica Neue',Helvetica,Arial,sans-serif}
@@ -324,6 +324,21 @@ html[data-theme="uor"] .hero .hero-pill{background:rgba(255,255,255,.14);border-
 html[data-theme="uor"] .hero .stat div:first-child{color:#fff}
 html[data-theme="uor"] .logo{background:linear-gradient(135deg,#162b75,#0368d9)}
 html[data-theme="uor"] .btn.gold{color:#162b75}
+/* se distingue del azul de Disney: acciones y pestañas activas en navy con subrayado amarillo, formas de píldora */
+html[data-theme="uor"] .btn{background:var(--navy)}
+html[data-theme="uor"] .btn:hover{background:#0d1d57}
+html[data-theme="uor"] .btn.ice{background:#fff;color:var(--navy);border:2px solid var(--navy)}
+html[data-theme="uor"] .btn.line{background:#fff;color:var(--ink);border:1px solid var(--line)}
+html[data-theme="uor"] .btn.gold{background:var(--gold)}
+html[data-theme="uor"] .btn.wa{background:#25D366}
+html[data-theme="uor"] .btn.danger{background:var(--bad-soft)}
+html[data-theme="uor"] .tabs button,html[data-theme="uor"] .pill{border-radius:999px}
+html[data-theme="uor"] .tabs button.on,html[data-theme="uor"] .pill.on,html[data-theme="uor"] .subp .pill.on,html[data-theme="uor"] .seg button.on{background:var(--navy);border-color:var(--navy);box-shadow:inset 0 -3px 0 var(--gold)}
+html[data-theme="uor"] .bottomnav button.on{color:var(--navy);box-shadow:inset 0 3px 0 var(--gold)}
+html[data-theme="uor"] .bbar .bc{background:var(--navy)}
+html[data-theme="uor"] .bbar .be{background:repeating-linear-gradient(45deg,rgba(var(--navy-rgb),.55) 0 6px,rgba(var(--navy-rgb),.2) 6px 12px)}
+html[data-theme="uor"] .bbar.lv-warn .bc{background:var(--warn)}html[data-theme="uor"] .bbar.lv-over .bc{background:var(--rose)}
+html[data-theme="uor"] .bbar.lv-warn .be{background:repeating-linear-gradient(45deg,rgba(180,83,9,.6) 0 6px,rgba(180,83,9,.25) 6px 12px)}html[data-theme="uor"] .bbar.lv-over .be{background:repeating-linear-gradient(45deg,rgba(225,29,72,.6) 0 6px,rgba(225,29,72,.25) 6px 12px)}
 
 /* ---- herramientas de la agencia: buscador, sesión de reservas, historial, alta rápida, datos del catálogo ---- */
 .cpbtn kbd{font:700 10px/1 var(--fh);background:var(--ice);border:1px solid var(--line);border-radius:6px;padding:2px 5px;margin-left:4px;color:var(--muted)}
@@ -373,3 +388,37 @@ html[data-theme="uor"] .btn.gold{color:#162b75}
 .tourdots{display:flex;gap:7px;justify-content:center;margin-top:18px}
 .tdot{width:8px;height:8px;border-radius:50%;border:0;background:var(--line);padding:0;cursor:pointer}
 .tdot.on{background:var(--blue);width:22px;border-radius:6px}
+
+/* ---------- presupuesto ---------- */
+.bbar{height:14px;border-radius:99px;background:var(--line);overflow:hidden;display:flex;margin-top:8px}
+.bbar.mini{height:8px;margin-top:6px}
+.bbar i{display:block;height:100%;transition:width .35s}
+.bbar .bc{background:var(--blue)}
+.bbar .be{background:repeating-linear-gradient(45deg,rgba(var(--blue-rgb),.55) 0 6px,rgba(var(--blue-rgb),.22) 6px 12px)}
+.bbar.lv-warn .bc{background:var(--warn)}.bbar.lv-warn .be{background:repeating-linear-gradient(45deg,rgba(180,83,9,.6) 0 6px,rgba(180,83,9,.25) 6px 12px)}
+.bbar.lv-over .bc{background:var(--rose)}.bbar.lv-over .be{background:repeating-linear-gradient(45deg,rgba(225,29,72,.6) 0 6px,rgba(225,29,72,.25) 6px 12px)}
+.bhead{margin-top:14px}
+.blegend{display:flex;gap:14px;margin-top:6px;font-size:11.5px;color:var(--muted);font-weight:600;flex-wrap:wrap}
+.blegend .lg{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-2px}
+.blegend .lg.c{background:var(--blue)}.blegend .lg.e{background:repeating-linear-gradient(45deg,rgba(var(--blue-rgb),.55) 0 3px,rgba(var(--blue-rgb),.22) 3px 6px)}.blegend .lg.r{background:var(--line)}
+.bkpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+@media(min-width:760px){.bkpis{grid-template-columns:repeat(5,1fr)}}
+.bk{background:var(--ice2);border:1px solid var(--line);border-radius:14px;padding:12px}
+.bk span{display:block;font:800 10px var(--fh);text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.bk b{display:block;font:900 18px var(--fh);margin-top:4px;color:var(--ink);overflow-wrap:anywhere}.bk em{font-style:normal;font-size:11px;color:var(--muted)}
+.bk.ok b{color:var(--ok)}.bk.warn b{color:var(--warn)}.bk.bad b{color:var(--bad)}
+.bcats{display:grid;gap:10px;margin-top:14px}
+@media(min-width:760px){.bcats{grid-template-columns:repeat(2,1fr)}}
+.bcat,.bit{display:flex;gap:12px;align-items:flex-start}
+.bci{width:34px;height:34px;border-radius:11px;background:var(--ice);color:var(--blue);display:grid;place-items:center;flex:none}
+.bcm,.bim{flex:1;min-width:0}
+.bopts{display:grid;gap:10px;margin-top:14px;background:var(--ice2);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.bopts label{display:flex;gap:10px;align-items:flex-start;font-weight:700;font-size:13px;cursor:pointer}.bopts input{margin-top:3px}
+.blist{display:grid;gap:10px;margin-top:10px}
+.bit{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}.bit.auto{background:var(--ice2);border-style:dashed}
+.bamt{font:900 15px var(--fh);white-space:nowrap}
+.lnkchip{cursor:pointer;border:1px solid var(--line);background:var(--ice);color:var(--blue);font-weight:700}
+.bcard{display:block;margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--ice2);color:inherit;text-decoration:none}
+.bcard:hover{border-color:var(--blue)}.bcard.empty{border-style:dashed}
+.blv{font:800 13px var(--fh)}.blv.ok{color:var(--ok)}.blv.warn{color:var(--warn)}.blv.over{color:var(--bad)}
+.sesopt{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px}.sesopt summary{cursor:pointer;font-weight:700;font-size:13px}
