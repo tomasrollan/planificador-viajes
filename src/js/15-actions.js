@@ -26,7 +26,7 @@ var CLICK=[
  {a:'data-reopen', f:function(v,t,at,e){ var k3=kase(v); k3.status='en_curso'; k3.updated=NOW(); save(); render(); openCase(v); }},
  {a:'data-clireq', f:function(v,t,at,e){ var c11=client(UI.cid), tt=($('#rq-text').value||'').trim(), ti=($('#rq-title').value||'').trim(); if(!tt){ toast('Escribí tu pedido'); return; } var nk2=addCase({cid:c11.id,title:ti||tt.slice(0,60),type:$('#rq-type').value,priority:$('#rq-urg').checked?'alta':'normal',text:tt}); toast('Pedido enviado. Te respondemos acá.'); render(); }},
  {p:function(t){ return t.closest('.modal .x'); }, f:function(v,t,at,e){ closeModal(); }},
- {a:'data-go',present:1, f:function(v,t,at,e){ UI.tab='agenda'; if(v==='catalogo'||v==='casos'||v==='reservas'){ location.hash=v; } else { location.hash=''; UI.route=v; render(); } }},
+ {a:'data-go',present:1, f:function(v,t,at,e){ UI.tab='agenda'; if(v==='catalogo'||v==='casos'||v==='reservas'||v==='clientes'){ location.hash=v; } else { location.hash=''; UI.route=v; render(); } }},
  {a:'data-role', f:function(v,t,at,e){ UI.role=v; UI.tab='agenda'; location.hash=''; render(); }},
  {a:'data-fz',present:1, f:function(v,t,at,e){ UI.filt.zone=at('data-fz'); refreshCat(); }},
  {a:'data-fd',present:1, f:function(v,t,at,e){ UI.filt.dest=at('data-fd'); UI.filt.zone=''; render(); }},

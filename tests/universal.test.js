@@ -106,5 +106,5 @@ ok(/My Disney Experience/.test(Messages.build('prevuelo',X))&&!/Universal/.test(
 
 // ---- migración de esquema
 const m=Repo.migrate({v:5,agency:{name:'A',id:'x',tz:'America/Argentina/Buenos_Aires'},clients:[{id:'a'},{id:'b',dests:['uor'],hotelU:'H',cardUSD:200}],cases:[],templates:[]});
-eq(m.v,Repo.SCHEMA);eq(Repo.SCHEMA,6);eq(m.clients[0].dests,['wdw']);eq(m.clients[0].cardUSD,0);eq(m.clients[0].hotelU,'');eq(m.clients[0].segs,null);eq(m.clients[1].dests,['uor']);eq(m.clients[1].cardUSD,200,'no pisa lo ya cargado');
+eq(m.v,Repo.SCHEMA);eq(Repo.SCHEMA,7);eq(m.clients[0].dests,['wdw']);eq(m.clients[0].cardUSD,0);eq(m.clients[0].hotelU,'');eq(m.clients[0].segs,null);eq(m.clients[1].dests,['uor']);eq(m.clients[1].cardUSD,200,'no pisa lo ya cargado');
 console.log('universal.test.js: '+n+' verificaciones OK');

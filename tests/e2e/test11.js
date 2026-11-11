@@ -66,7 +66,7 @@ const setv=(s,v)=>{const e=d.querySelector(s);e.value=v;e.dispatchEvent(new w.Ev
  const st2=JSON.parse(w.localStorage.getItem('agency_planner_v3'));const c1=st2.clients.find(c=>c.id==='c1');
  ok(c1.travelers.some(t=>t.name==='Abuela Rosa')&&c1.phone.indexOf('5555')>=0&&c1.intake.reviewed,'importó viajero y teléfono');
  ok(st2.cases.some(k=>k.cid==='c1'&&/Formulario de ingreso/.test(k.title)),'creó un caso para la agencia');
- ok(st2.v===6&&Array.isArray(st2.templates)&&st2.templates.length===1,'estado v6 con plantilla guardada');
+ ok(st2.v===7&&Array.isArray(st2.templates)&&st2.templates.length===1,'estado v7 con plantilla guardada');
  // las preferencias del formulario alimentan la sugerencia
  const cl=c1;ok(cl.intake.prefs.avoid==='mariscos'&&cl.intake.prefs.styles.indexOf('P')>=0,'preferencias guardadas');
  // 6) búsqueda de platos

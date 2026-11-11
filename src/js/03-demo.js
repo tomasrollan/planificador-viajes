@@ -60,7 +60,14 @@ function demo(){
     K(1006,'c3','Cambiar las fechas del viaje','Otro','alta','nuevo',20,'Necesitamos mover el viaje una semana. ¿Se puede?'),
     K(1007,'c3','Duda sobre créditos del plan premium','Consulta','normal','en_curso',9,'¿Los shows cuentan como dos créditos?',null,[{by:'agus',kind:'msg',text:'Sí, los shows y algunos de personajes cuestan 2 créditos. Están marcados en cada restaurante.'}])
   ];
-  return {v:3,agency:{name:'Agus Natrone Turismo',tagline:'Planificador de viajes'},seq:1008,clients:[a,b,g,u,m],cases:cases};   // v3 -> Repo.migrate lo lleva a la versión actual (agency_id, zona horaria)
+  var FM=function(n,name,phone,tags,pers,prefs,notes,past){ return {id:'fam'+n,code:'FAM-'+('000'+n).slice(-4),name:name,phone:phone,email:'',tags:tags,personality:pers,prefs:prefs,notes:notes.map(function(t,i){return {id:'fn'+n+i,t:t,at:Date.now()-(i+2)*864e5*9,by:'agus'}}),past:past.map(function(p,i){return {id:'fp'+n+i,year:p[0],dest:p[1],hotel:p[2],notes:p[3]}}),created:Date.now()-864e5*400}; };
+  var fams=[
+    FM(1,'Familia Rodríguez','+54 9 11 5555-1001',['viaja con chicos','cumpleaños en viaje','repite'],'Laura decide todo y le gusta tener el plan cerrado con tiempo. Martín solo pregunta por el precio. Prefieren WhatsApp a llamadas.','Hoteles dentro de Disney, desayuno con personajes, no les gustan las filas. Comen temprano por los chicos.',['Prefieren que les mande 2 opciones, no 5.','Sofi cumple años durante el viaje: sorprenderla en la cena.'],[[2024,'Cancún','Hotel con todo incluido','Los chicos amaron el club infantil. Les pareció caro el extra de excursiones.'],[2022,'Walt Disney World','Disney\'s Pop Century','Primera vez. Volvieron encantados, querían más tiempo.']]),
+    FM(2,'Familia Gómez','+54 9 11 5555-1002',['plan premium','VIP'],'Julián es detallista y quiere ver todo en números. Ana es la que decide los restaurantes.','Buena comida, mesas con vista, sin apuro. Pagan en cuotas.',['Pidieron factura a nombre de la empresa de Julián.'],[[2023,'Italia','Roma y Florencia','Viaje de aniversario. Querían más tiempo libre y menos traslados.']]),
+    FM(3,'Pareja Pérez','+54 9 11 5555-1003',['luna de miel'],'Carla es la que escribe; Diego se suma a la decisión final.','Les interesa lo romántico y tranquilo; comen poco.',[],[])
+  ];
+  a.famId='fam1'; g.famId='fam2'; b.famId='fam3';
+  return {v:3,agency:{name:'Agus Natrone Turismo',tagline:'Planificador de viajes'},seq:1008,families:fams,famSeq:3,clients:[a,b,g,u,m],cases:cases};   // v3 -> Repo.migrate lo lleva a la versión actual (agency_id, zona horaria)
 }
 var repo=Repo.create({storage:store,key:KEY,demo:demo});
 var S=repo.load();

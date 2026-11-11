@@ -8,20 +8,24 @@ const TX=d=>{const b=d.body.cloneNode(true);b.querySelectorAll('script').forEach
 (async()=>{
  // ---- agencia: aparece sola
  let dom=boot('https://x.test/#panel');let w=dom.window,d=w.document;await sleep(1200);
- ok(!!d.querySelector('.modal.tour')&&/Guía para la agencia · 1 de 6/.test(TX(d)),'la guía de la agencia aparece sola al entrar (6 pasos)');
+ ok(!!d.querySelector('.modal.tour')&&/Guía para la agencia · 1 de 9/.test(TX(d)),'la guía de la agencia aparece sola al entrar (9 pasos)');
  ok(/primero los clientes/.test(TX(d)),'primer paso: clientes primero');
- d.querySelector('[data-tourgo="1"]').click();await sleep(50);ok(/2 de 6/.test(TX(d))&&/WhatsApp/.test(TX(d)),'Siguiente avanza (alta desde WhatsApp)');
- d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await sleep(50);ok(/3 de 6/.test(TX(d)),'flecha derecha avanza');
- d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));await sleep(50);ok(/2 de 6/.test(TX(d)),'flecha izquierda retrocede');
- for(let i=0;i<4;i++){d.querySelector('.modal.tour .btn:not(.line)').click();await sleep(30);}
- ok(/6 de 6/.test(TX(d))&&/Ctrl\+K/.test(TX(d))&&/¡Listo!/.test(TX(d)),'último paso con atajos y botón «¡Listo!»');
+ d.querySelector('[data-tourgo="1"]').click();await sleep(50);ok(/2 de 9/.test(TX(d))&&/WhatsApp/.test(TX(d)),'Siguiente avanza (alta desde WhatsApp)');
+ d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await sleep(50);ok(/3 de 9/.test(TX(d))&&/Clientes y fichas/.test(TX(d)),'flecha derecha avanza (ficha de clientes)');
+ for(const [i,re] of [[5,/Presupuesto y comprobantes/],[6,/Pagos y cuotas/]]){d.querySelector('[data-tourgo="'+i+'"]').click();await sleep(40);ok(re.test(TX(d)),'la guía explica: '+re.source);}
+ d.querySelector('[data-tourgo="1"]').click();await sleep(40);ok(/Cruceros/.test(TX(d))&&/Próximamente|que vienen/.test(TX(d)),'la guía menciona los destinos que vienen');
+ d.querySelector('[data-tourgo="7"]').click();await sleep(40);ok(/Mis reservas y comprobantes/.test(TX(d))&&/Mis pagos/.test(TX(d)),'la guía cuenta lo que ve el cliente');
+ d.querySelector('[data-tourgo="2"]').click();await sleep(40);
+ d.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));await sleep(50);ok(/2 de 9/.test(TX(d)),'flecha izquierda retrocede');
+ for(let i=0;i<7;i++){d.querySelector('.modal.tour .btn:not(.line)').click();await sleep(30);}
+ ok(/9 de 9/.test(TX(d))&&/Ctrl\+K/.test(TX(d))&&/¡Listo!/.test(TX(d)),'último paso con atajos y botón «¡Listo!»');
  d.querySelector('.modal.tour .btn:not(.line)').click();await sleep(50);
  ok(!d.querySelector('.modal.tour'),'«¡Listo!» cierra');
  ok(JSON.parse(w.localStorage.getItem('agency_tour_v1')).agus===1,'queda guardado que ya la vio');
  w.location.hash='#casos';await sleep(150);w.location.hash='#panel';await sleep(700);
  ok(!d.querySelector('.modal.tour'),'no vuelve a aparecer al navegar');
  d.querySelector('[data-tour]').click();await sleep(80);
- ok(!!d.querySelector('.modal.tour')&&/1 de 6/.test(TX(d)),'el botón «?» la reabre desde el principio');
+ ok(!!d.querySelector('.modal.tour')&&/1 de 9/.test(TX(d)),'el botón «?» la reabre desde el principio');
  d.querySelector('[data-tourskip]').click();await sleep(50);ok(!d.querySelector('.modal.tour'),'cerrar con la X');
  const st=JSON.parse(w.localStorage.getItem('agency_planner_v3'));
  const c1=st.clients.find(c=>c.id==='c1'),c2=st.clients.find(c=>c.mode==='view');
@@ -38,10 +42,12 @@ const TX=d=>{const b=d.body.cloneNode(true);b.querySelectorAll('script').forEach
   dd.querySelector('#pin').value=client.pin;dd.querySelector('[data-unlock]').click();await sleep(900);
   return dm;};
  let dc=await mk(c1);let dd=dc.window.document;
- ok(!!dd.querySelector('.modal.tour')&&/Guía de uso · 1 de 5/.test(TX(dd)),'tras el PIN, el cliente ve su guía (5 pasos)');
+ ok(!!dd.querySelector('.modal.tour')&&/Guía de uso · 1 de 6/.test(TX(dd)),'tras el PIN, el cliente ve su guía (6 pasos)');
  ok(/proponés las comidas/.test(TX(dd)),'modo colaborativo: «proponés las comidas»');
  dd.querySelector('[data-tourgo="2"]').click();await sleep(50);
  ok(/no garantiza/.test(TX(dd)),'paso de alergias con el aviso de que la app no garantiza seguridad');
+ dd.querySelector('[data-tourgo="4"]').click();await sleep(50);
+ ok(/Mis reservas y comprobantes/.test(TX(dd))&&/Mis pagos/.test(TX(dd)),'paso de reservas y pagos (si la agencia los compartió)');
  dd.querySelector('[data-tourskip]').click();await sleep(50);
  ok(!!dd.querySelector('[data-tour]'),'el cliente tiene el botón «?»');
  dc.window.close();

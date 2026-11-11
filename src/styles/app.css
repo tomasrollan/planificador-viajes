@@ -426,3 +426,8 @@ html[data-theme="uor"] .bbar.lv-warn .be{background:repeating-linear-gradient(45
 .bbar.lv-late .be{background:repeating-linear-gradient(45deg,rgba(225,29,72,.65) 0 6px,rgba(225,29,72,.25) 6px 12px)}
 .bit.pq.paid{background:var(--ok-soft);border-color:var(--ok-line)}
 html[data-theme="uor"] .bit.pq.paid{background:var(--ok-soft)}
+
+/* clientes / fichas */
+.cltool{margin:0 0 14px}.cltool input{width:100%}
+.soonbtn{width:100%;text-align:left}.soonbtn.on{border-color:var(--ok,#2e7d32)}
+.soon .grid{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}

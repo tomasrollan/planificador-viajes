@@ -19,6 +19,7 @@ function paletteItems(){
   var it=[];
   [['go|panel','Ir al panel','inicio clientes hoy','grid'],['go|reservas','Ir a Reservas (cola)','reservas cola pendientes','list'],['go|sesion','Iniciar sesión de reservas','reservar sesion modo foco confirmar','check'],['go|casos','Ir a Casos','mesa de ayuda pedidos tickets','chat'],['go|catalogo','Ir a Restaurantes','catalogo restaurantes','utensils'],['go|nuevo','Nuevo cliente','alta crear cliente viaje','plus'],['go|ajustes','Ajustes de la agencia','configuracion nombre zona horaria','key']].forEach(function(a){ it.push({type:'act',id:a[0].slice(3),label:a[1],sub:'Acción',text:a[1]+' '+a[2],ic:a[3]}); });
   S.clients.forEach(function(c){ it.push({type:'cli',id:c.id,label:c.name,sub:destsLabel(c)+' · '+fmtShort(c.start)+' → '+fmtShort(c.end)+(hotelLine(c)?' · '+hotelLine(c):''),text:c.name+' '+destsLabel(c)+' '+hotelLine(c)+' '+(c.phone||'')+' '+c.travelers.map(function(t){return t.name}).join(' '),ic:'users',boost:6}); });
+  (S.families||[]).forEach(function(f){ it.push({type:'fam',id:f.id,label:f.name+' · '+f.code,sub:'Ficha del cliente · '+famTrips(f).length+' viajes'+(f.tags&&f.tags.length?' · '+f.tags.join(', '):''),text:f.name+' '+f.code+' ficha familia '+(f.phone||'')+' '+(f.tags||[]).join(' ')+' '+(f.prefs||''),ic:'user',boost:2}); });
   S.cases.forEach(function(k){ var c=client(k.cid); it.push({type:'case',id:k.id,label:'#'+k.num+' · '+k.title,sub:(c?c.name+' · ':'')+k.type+' · '+CST[k.status][0],text:'caso '+k.num+' '+k.title+' '+(c?c.name:'')+' '+k.type,ic:'chat',boost:isOpen(k)?3:0}); });
   Object.keys(RID).forEach(function(id){ var r=RID[id]; it.push({type:'rest',id:id,label:r.name,sub:(r.dest==='uor'?'Universal':'Disney')+' · '+(r.area||'')+' · '+(r.cuisine||''),text:r.name+' '+(r.area||'')+' '+(r.cuisine||'')+' '+(r.zone||''),ic:'utensils'}); });
   return it;
@@ -29,13 +30,14 @@ function openPalette(){
   drawPalette(); var q=$('#cp-q'); if(q) q.focus();
 }
 function drawPalette(){
-  var el=$('#cp-list'); if(!el) return; var T={act:'Acción',cli:'Cliente',case:'Caso',rest:'Restaurante'};
+  var el=$('#cp-list'); if(!el) return; var T={act:'Acción',cli:'Cliente',fam:'Ficha',case:'Caso',rest:'Restaurante'};
   el.innerHTML=CP.res.length?CP.res.map(function(x,i){ return '<button class="cprow'+(i===CP.sel?' on':'')+'" data-cp="'+i+'"><span class="cpi">'+I(x.ic)+'</span><span class="cpt"><b>'+esc(x.label)+'</b><span class="tiny muted">'+esc(x.sub)+'</span></span><span class="chip gray">'+T[x.type]+'</span></button>'; }).join(''):'<div class="empty" style="margin:12px">No encontré nada. Probá con otra palabra.</div>';
   var on=el.querySelector('.cprow.on'); if(on&&on.scrollIntoView) on.scrollIntoView({block:'nearest'});
 }
 function runPalette(i){
   var x=CP.res[i]; if(!x) return; closeModal();
   if(x.type==='cli'){ UI.tab='agenda'; location.hash='cliente-'+x.id; }
+  else if(x.type==='fam'){ location.hash='familia-'+x.id; }
   else if(x.type==='case'){ openCase(x.id); }
   else if(x.type==='rest'){ modalRest(x.id,{c:null}); }
   else if(x.id==='nuevo'){ newTripModal(); } else if(x.id==='ajustes'){ openSettings(); }

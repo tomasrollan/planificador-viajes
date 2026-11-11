@@ -34,3 +34,7 @@ ok(Repo.parseBackup(JSON.stringify({app:'agus-planner',state:{v:99,agency:{},cli
 ok(Repo.parseBackup(JSON.stringify({app:'agus-planner',state:{v:4}})).error,'incompleta');
 const old3=Repo.parseBackup(JSON.stringify({app:'agus-planner',state:{v:3,agency:{name:'X'},clients:[{id:'a'}],cases:[]}}));eq(old3.state.v,Repo.SCHEMA);eq(old3.state.clients[0].agency_id,Repo.DEFAULT_AGENCY);
 console.log('repo.test: '+n+' verificaciones OK');
+// v7: familias
+{const st3=mkStore();st3.set('k',{v:6,agency:{name:'X'},clients:[{id:'a',name:'Familia A',phone:'+54 9 11 5555-1234'},{id:'b',name:'Familia A (copia)',phone:'541155551234'},{id:'c',name:'Otra',phone:''},{id:'d',name:'Sin tel',phone:''}],cases:[]});
+ const S7=Repo.create({storage:st3,key:'k',demo}).load();eq(S7.v,7);eq(S7.families.length,3,'el mismo teléfono es la misma familia; sin teléfono, una por viaje');eq(S7.clients[0].famId,S7.clients[1].famId);eq(S7.families[0].code,'FAM-0001');eq(S7.families[2].code,'FAM-0003');eq(S7.families[0].name,'Familia A');eq(S7.famSeq,3);
+ const again=Repo.migrate(JSON.parse(JSON.stringify(S7)));eq(again.families.length,3,'migrar dos veces no duplica');}

@@ -144,11 +144,13 @@ function setDests(c,d,on){
   if(cur.length<2) c.segs=null; else if(!c.segs){ c.segs=null; }
   return true;
 }
-function newTripModal(){
-  showModal('<div class="mask" data-close="1"><div class="modal"><button class="x" data-close="1">'+I('x')+'</button><div class="pad"><span class="eyebrow">Nuevo cliente</span><h3 style="padding-right:40px;font-size:20px;font-weight:900;margin:4px 0 14px">¿A dónde viaja?</h3><div class="grid" style="gap:10px">'+
+function newTripModal(famId){
+  UI.famNew=(typeof famId==='string'&&famId)?famId:null; var ffm=UI.famNew?fam(UI.famNew):null;
+  showModal('<div class="mask" data-close="1"><div class="modal"><button class="x" data-close="1">'+I('x')+'</button><div class="pad"><span class="eyebrow">'+(ffm?'Nuevo viaje · '+esc(ffm.name)+' ('+esc(ffm.code)+')':'Nuevo cliente')+'</span><h3 style="padding-right:40px;font-size:20px;font-weight:900;margin:4px 0 14px">¿A dónde viaja?</h3><div class="grid" style="gap:10px">'+
    '<button class="btn" style="justify-content:flex-start" data-newtrip="wdw">'+I('sparkles')+' Walt Disney World</button>'+
    '<button class="btn" style="justify-content:flex-start" data-newtrip="uor">'+I('star')+' Universal Orlando Resort</button>'+
    '<button class="btn" style="justify-content:flex-start" data-newtrip="both">'+I('calendar')+' Disney + Universal (viaje combinado)</button></div>'+
+   soonHtml()+
    '<div class="qa"><div class="rgh" style="margin:16px 0 8px"><div><b>O pegá el mensaje del cliente</b><div class="small muted">Leo destino, fechas, viajeros y teléfono. Vos revisás antes de crear.</div></div></div><textarea id="qa-text" rows="4" placeholder="Ej: Hola Agus! Somos la familia Pérez, vamos a Disney del 12 al 20 de julio. Somos 2 adultos y 2 chicos…"></textarea><div id="qa-prev" class="qprev"></div><div class="row" style="margin-top:10px"><button class="btn" id="qa-go" data-qagen="1" disabled>'+I('plus')+' Crear desde el mensaje</button></div></div>'+
    '<div class="tiny muted" style="margin-top:12px">Después podés cambiarlo todo en «Datos del viaje».</div></div></div></div>');
   quickPreview();
@@ -156,12 +158,16 @@ function newTripModal(){
 function createTrip(kind,o){
   o=o||{}; var base=new Date().toISOString().slice(0,10), ds=kind==='both'?['wdw','uor']:[kind];
   var nc={id:uid(),token:genToken(o.name||'cliente'),pin:genPin(),name:o.name||'Nuevo cliente',destination:'',dests:ds,hotel:'',hotelU:'',cardUSD:0,segs:null,start:addDays(base,90),end:addDays(base,96),plan:ds.indexOf('wdw')>=0?'base':'none',mode:'collab',travelers:[{id:'t1',name:'Viajero 1',type:'adulto',allergies:''}],days:[],requests:[],favs:{},notes:o.notes||'',templates:undefined,intake:null,phone:o.phone||''};
+  var ff=o.famId||UI.famNew?fam(o.famId||UI.famNew):null; if(ff&&!o.name) nc.name=ff.name; if(ff&&!o.phone) nc.phone=ff.phone||'';
   if(o.start&&o.end&&o.end>=o.start){ nc.start=o.start; nc.end=o.end; }
   if(o.travelers&&o.travelers.length) nc.travelers=o.travelers;
+  else if(ff){ var lt=famTrips(ff).filter(function(x){return x.travelers&&x.travelers.length})[0]; if(lt){ nc.travelers=lt.travelers.map(function(t,i){ return {id:'t'+(i+1),name:t.name,type:t.type,allergies:t.allergies||''}; }); nc.notes='Viajeros copiados del último viaje: revisá edades y alergias con el cliente.'; } }
   if(o.hotel){ if(o.hotel.dest==='uor'&&ds.indexOf('uor')>=0) nc.hotelU=o.hotel.name; else if(o.hotel.dest==='wdw'&&ds.indexOf('wdw')>=0) nc.hotel=o.hotel.name; }
   if(o.plan&&ds.indexOf('wdw')>=0) nc.plan=o.plan;
   delete nc.templates; nc.destination=destsLabel(nc); nc.days=mkDays(nc.start,nc.end);
   if(kind==='both'){ var span=Math.max(1,Dates.nights(nc.start,nc.end)), mid=addDays(nc.start,Math.min(span-1,Math.max(1,Math.round(span/2)))); nc.segs={wdw:{start:nc.start,end:mid},uor:{start:mid,end:nc.end}}; }
-  repo.addClient(nc); save(); closeModal(); UI.tab=o.quick?'datos':'datos'; location.hash='cliente-'+nc.id; return nc;
+  var lk=linkFamily(nc,{famId:o.famId||UI.famNew}); UI.famNew=null; repo.addClient(nc); save(); closeModal(); UI.tab='datos'; location.hash='cliente-'+nc.id;
+  if(lk.existing){ var nt=famTrips(lk.f).length-1; toast('Es cliente de la agencia: '+lk.f.name+' ('+lk.f.code+')'+(nt>0?' · '+nt+(nt===1?' viaje anterior':' viajes anteriores'):'')); }
+  return nc;
 }
 function destChips(c){ return tripDests(c).map(function(d){ return '<span class="chip '+(d==='uor'?'gold':'')+'">'+esc(DESTS[d].s)+'</span>'; }).join(''); }
