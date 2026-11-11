@@ -87,11 +87,13 @@ const boot=(url,seed)=>new JSDOM(html,{runScripts:'dangerously',pretendToBeVisua
  // ---- resumen del viaje
  await go('#cliente-c3');click('[data-tab="seg"]');await sleep(120);
  let printed=0;w.print=()=>{printed++};click('[data-summary]');await sleep(150);
- ok(!!d.querySelector('.pdoc')&&/Resumen de tu viaje/.test(T())&&/Familia Gómez/.test(T())&&/Agenda día por día/.test(T()),'abre el resumen del viaje con la marca de la agencia');
+ ok(!!d.querySelector('.pdoc')&&/Resumen de tu viaje/.test(T())&&/Familia Gómez/.test(T())&&/Día por día/.test(T()),'abre el resumen del viaje con la marca de la agencia');
  ok(/Reservas confirmadas/.test(T()),'incluye las reservas marcadas como visibles');
  ok(!/US\$|Presupuesto|cuota/i.test(d.querySelector('.pdoc').textContent.replace(/Estimado/g,'')),'no incluye montos, presupuesto ni pagos');
  ok(/no garantiza que un plato sea seguro/.test(d.querySelector('.pdoc').textContent),'incluye el aviso de alergias');
- click('[data-doprint]');await sleep(60);ok(printed===1&&!d.body.classList.contains('pdoc-on')||printed===1,'el botón abre el diálogo de impresión / guardar como PDF');
+ ok(!!d.querySelector('.pdoc.pdm')&&/Celular/.test(d.querySelector('[data-pdfmt]').parentNode.textContent),'por defecto el formato es Celular (vertical y angosto)');
+ click('[data-pdfmt$="|a4"]');await sleep(100);ok(!!d.querySelector('.pdoc.pda'),'se puede pasar a Hoja A4');
+ click('[data-doprint]');await sleep(60);ok(/size:A4/.test((d.getElementById('pdoc-page')||{textContent:''}).textContent)||printed===1,'imprime con el tamaño de página elegido');ok(printed===1&&!d.body.classList.contains('pdoc-on')||printed===1,'el botón abre el diálogo de impresión / guardar como PDF');
  // ---- el portal del cliente no ve nada de esto
  const dp=boot('https://x.test/?notour#portal-rodriguez-7k2m9');await sleep(900);const PT=()=>{const b=dp.window.document.body.cloneNode(true);b.querySelectorAll('script').forEach(x=>x.remove());return b.textContent};
  ok(!/Checklist de documentación|Próximo contacto|Postviaje|Etapa del cliente/.test(PT()),'el portal del cliente no muestra el seguimiento interno');

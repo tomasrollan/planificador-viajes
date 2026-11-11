@@ -42,27 +42,34 @@ function segPanel(c){
 function docsOf(c){ if(!c.docs) c.docs=FU.defaultDocs(c); return c.docs; }
 
 /* ---------- resumen del viaje (PDF desde el navegador) ---------- */
-function summaryDoc(c){
+var PDF_FMT={cel:{n:'Celular',page:'size:110mm 195mm;margin:7mm'},a4:{n:'Hoja A4',page:'size:A4;margin:14mm'}};
+function summaryDoc(c,fmt){
   var items=(c.items||[]).filter(function(i){return i.visible}).sort(function(a,b){return (a.date||'9').localeCompare(b.date||'9')});
-  var h='<div class="pdoc"><div class="pdh"><div><div class="pdag">'+esc(S.agency.name)+'</div><div class="pdsub">Resumen de tu viaje</div></div><div class="pdcode">'+(famOf(c)?esc(famOf(c).code):'')+'</div></div>'+
+  var h='<div class="pdoc '+(fmt==='a4'?'pda':'pdm')+'"><div class="pdh"><div><div class="pdag">'+esc(S.agency.name)+'</div><div class="pdsub">Resumen de tu viaje</div></div><div class="pdcode">'+(famOf(c)?esc(famOf(c).code):'')+'</div></div>'+
    '<h1>'+esc(c.name)+'</h1><div class="pdmeta"><div><b>Destino</b><span>'+esc(destsLabel(c))+'</span></div><div><b>Fechas</b><span>'+esc(fmtShort(c.start))+' al '+esc(fmtShort(c.end))+' · '+nights(c)+' noches</span></div>'+(hotelLine(c)?'<div><b>Alojamiento</b><span>'+esc(hotelLine(c))+'</span></div>':'')+'<div><b>Viajeros</b><span>'+esc(c.travelers.map(function(t){return t.name}).join(', '))+'</span></div></div>';
-  if(items.length) h+='<h2>Reservas confirmadas</h2><table class="pdt"><tr><th>Reserva</th><th>Fecha</th><th>Estado</th><th>Confirmación</th></tr>'+items.map(function(i){ return '<tr><td>'+esc(i.title)+'</td><td>'+(i.date?esc(fmtShort(i.date)):'—')+'</td><td>'+(i.status==='confirmado'?'Confirmado':'Estimado')+'</td><td>'+esc(i.conf||'—')+'</td></tr>'; }).join('')+'</table>';
+  if(items.length) h+='<h2>Reservas confirmadas</h2>'+items.map(function(i){ return '<div class="pdres"><div class="pdrt">'+esc(i.title)+'</div><div class="pdrs">'+(i.date?esc(fmtShort(i.date)):'Sin fecha')+' · '+(i.status==='confirmado'?'Confirmado':'Estimado')+(i.conf?' · <b>Confirmación: '+esc(i.conf)+'</b>':'')+'</div></div>'; }).join('');
   var rows=c.days.map(function(d){ var ms=MEALS.map(function(m){ var s=d.slots[m[0]],r=s&&RID[s.rid]; return r?'<li><b>'+m[1]+':</b> '+esc(r.name)+(s.time?' · '+esc(s.time):'')+' <span class="pdst '+(s.state==='reservada'?'ok':'')+'">'+STATES[s.state][0]+(s.conf?' · conf. '+esc(s.conf):'')+'</span></li>':''; }).join('');
     return (ms||d.park)?'<div class="pdday"><div class="pddn">'+esc(dayName(d.date))+' '+esc(dayLong(d.date))+(d.park?' · '+esc(d.park):'')+'</div>'+(ms?'<ul>'+ms+'</ul>':'<div class="tiny muted">Sin comidas definidas todavía</div>')+'</div>':''; }).join('');
-  h+='<h2>Agenda día por día</h2>'+(rows||'<p class="muted small">Todavía no hay agenda cargada.</p>');
+  h+='<h2>Día por día</h2>'+(rows||'<p class="muted small">Todavía no hay agenda cargada.</p>');
   h+='<div class="pdfoot"><b>Importante</b><br>Los horarios, menús y precios pueden cambiar: confirmá siempre al reservar y al llegar al restaurante. Si alguien tiene una alergia o dieta especial, avisá al hacer la reserva y al mozo; esta información no garantiza que un plato sea seguro.<div class="tiny" style="margin-top:8px">Preparado por '+esc(S.agency.name)+' · '+esc(fmtShort(fuToday()))+'</div></div></div>';
   return h;
 }
-function openSummary(cid){
-  var c=client(cid); if(!c) return;
-  showModal('<div class="mask" data-close="1"><div class="modal docm"><button class="x noprint" data-close="1">'+I('x')+'</button><div class="pad"><div class="row noprint" style="gap:8px;margin:0 0 12px;padding-right:44px"><button class="btn" data-doprint="1">'+I('ticket')+' Imprimir / Guardar como PDF</button><button class="btn line" data-close="1">Cerrar</button></div><div class="tiny muted noprint" style="margin-bottom:10px">En el cuadro de impresión elegí «Guardar como PDF». No incluye montos ni pagos.</div>'+summaryDoc(c)+'</div></div></div>');
+function openSummary(cid,fmt){
+  var c=client(cid); if(!c) return; fmt=fmt||UI.seg.fmt||'cel'; UI.seg.fmt=fmt;
+  showModal('<div class="mask" data-close="1"><div class="modal docm"><button class="x noprint" data-close="1">'+I('x')+'</button><div class="pad"><div class="noprint" style="padding-right:44px"><div class="row" style="gap:8px;align-items:center;margin:0 0 10px"><span class="small muted">Formato:</span>'+Object.keys(PDF_FMT).map(function(k){ return '<button class="pill'+(fmt===k?' on':'')+'" data-pdfmt="'+c.id+'|'+k+'">'+PDF_FMT[k].n+'</button>'; }).join('')+'</div><div class="row" style="gap:8px;margin:0 0 8px"><button class="btn" data-doprint="1">'+I('ticket')+' Imprimir / Guardar como PDF</button><button class="btn line" data-close="1">Cerrar</button></div><div class="tiny muted" style="margin-bottom:12px">'+(fmt==='cel'?'«Celular» arma páginas angostas y verticales con letra grande, pensadas para leer y compartir por WhatsApp.':'«Hoja A4» es para imprimir en papel.')+' En el cuadro de impresión elegí «Guardar como PDF». No incluye montos ni pagos.</div></div>'+summaryDoc(c,fmt)+'</div></div></div>');
 }
-function doPrint(){ document.body.classList.add('pdoc-on'); var done=function(){ document.body.classList.remove('pdoc-on'); window.removeEventListener('afterprint',done); }; window.addEventListener('afterprint',done); try{ window.print(); }catch(e){ done(); } setTimeout(function(){ if(!document.hasFocus||true) {} },0); }
+function doPrint(){
+  var st=document.createElement('style'); st.id='pdoc-page'; st.textContent='@page{'+PDF_FMT[UI.seg.fmt||'cel'].page+'}'; document.head.appendChild(st);
+  document.body.classList.add('pdoc-on');
+  var done=function(){ document.body.classList.remove('pdoc-on'); var x=document.getElementById('pdoc-page'); if(x) x.remove(); window.removeEventListener('afterprint',done); };
+  window.addEventListener('afterprint',done); try{ window.print(); }catch(e){ done(); }
+}
 
 /* ---------- acciones ---------- */
 CLICK.push(
  {a:'data-openseg', f:function(v){ UI.tab='seg'; }},
  {a:'data-summary', f:function(v){ openSummary(v); }},
+ {a:'data-pdfmt', f:function(v){ var p=v.split('|'); openSummary(p[0],p[1]); }},
  {a:'data-doprint',present:1, f:function(){ doPrint(); }},
  {a:'data-docdone', f:function(v){ var p=v.split('|'), c=client(p[0]); if(!c) return; var d=docsOf(c).filter(function(x){return x.id===p[1]})[0]; if(!d) return; d.done=!d.done; logAct(c.id,'Checklist: '+(d.done?'listo':'pendiente')+' · '+d.label.slice(0,60),'evento'); save(); render(); }},
  {a:'data-docdel', f:function(v){ var p=v.split('|'), c=client(p[0]); if(!c) return; c.docs=docsOf(c).filter(function(x){return x.id!==p[1]}); save(); render(); }},
