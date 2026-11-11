@@ -1,0 +1,154 @@
+{
+ "capturedAt": "2026-11-11",
+ "source": "https://www.universalorlando.com/web/pt/br/plan-your-visit/dining-experiences/reservations (leída desde Chrome de Tomás)",
+ "note": "Los enlaces con cookies/query quedaron bloqueados en la lectura (Alessandro's, Bice o similar, 2 de hoteles, y 'Gastronomia'). Menú .../menu.html en /web/en/us/ es el equivalente en inglés.",
+ "items": [
+  {
+   "id": "antojitos",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.antojitos",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/antojitos-authentic-mexican-food/menu.html"
+  },
+  {
+   "id": "bigfire",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.bigfire",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/bigfire/menu.html"
+  },
+  {
+   "id": "bob_marley",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.bob_marley",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/bob-marley-a-tribute-to-freedom/menu.html"
+  },
+  {
+   "id": "cowfish",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.cowfish",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/the-cowfish/menu.html"
+  },
+  {
+   "id": "margaritaville",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.margaritaville",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/jimmy-buffetts-margaritaville/menu.html"
+  },
+  {
+   "id": "nbc_sports_grill",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.nbc_sports_grill",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/nbc-sports-grill-brew/menu.html"
+  },
+  {
+   "id": "pat_o_briens",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.pat_o_briens",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/pat-o-briens/menu.html"
+  },
+  {
+   "id": "toothsome",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.toothsome",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/toothsome-chocolate-emporium-and-savory-feast-kitchen/menu.html"
+  },
+  {
+   "id": "vivo",
+   "zone": "CW",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.cw.dining.vivo",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/vivo-italian-kitchen/menu.html"
+  },
+  {
+   "id": "atlantic",
+   "zone": "EU",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.ueu.dining.atlantic",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/atlantic"
+  },
+  {
+   "id": "blue_dragon",
+   "zone": "EU",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.ueu.dining.the_blue_dragon_pan_asian_restaurant",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/the-blue-dragon-pan-asian-restaurant"
+  },
+  {
+   "id": "confisco_grille",
+   "zone": "IA",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.ioa.dining.confisco_grille",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/confisco-grille/menu.html"
+  },
+  {
+   "id": "finnegans",
+   "zone": "US",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.usf.dining.finnegans_bar_and_grill",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/finnegans-bar-grill/menu.html"
+  },
+  {
+   "id": "lombards",
+   "zone": "US",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.usf.dining.lombards_seafood_grille",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/lombards-seafood-grille/menu.html"
+  },
+  {
+   "id": "mythos",
+   "zone": "IA",
+   "book": "https://www.universalorlando.com/dining/en/us/login?place_id=uor.ioa.dining.mythos_restaurant",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/mythos-restaurant/menu.html"
+  },
+  {
+   "id": "amatista",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orl/amatista-cookhouse-at-loews-sapphire-falls-resort"
+  },
+  {
+   "id": "bice",
+   "zone": "UH",
+   "book": "http://www.opentable.com/bice-at-the-loews-portofino-bay-hotel-reservations-orlando?restref=6042"
+  },
+  {
+   "id": "islands_dining_room",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orl/islands-dining-room-at-loews-royal-pacific",
+   "menu": "https://islands-dining-room.constantcontactsites.com/"
+  },
+  {
+   "id": "jakes",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orl/jakes-american-bar-at-loews-royal-pacific-resort"
+  },
+  {
+   "id": "mama_dellas",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orl/mama-dellas-ristorante-at-loews-portofino-bay"
+  },
+  {
+   "id": "strong_water",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orl/strong-water-tavern-at-loews-sapphire-falls-resort"
+  },
+  {
+   "id": "the_kitchen",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orl/the-kitchen-at-hard-rock-hotel"
+  },
+  {
+   "id": "palm",
+   "zone": "CW",
+   "book": "https://www.opentable.com/r/the-palm-reservations-orlando?restref=7445",
+   "menu": "https://www.universalorlando.com/web/en/us/things-to-do/dining/the-palm/dinner-menu.html"
+  },
+  {
+   "id": "trattoria_del_porto",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orl/trattoria-del-porto-at-loews-portofino-bay-hotel"
+  },
+  {
+   "id": "bar_helios",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orlando-fl/venues/bar-helios-at-universal-helios-grand-hotel-a-loews-hotel"
+  },
+  {
+   "id": "flora_taverna",
+   "zone": "UH",
+   "book": "https://resy.com/cities/orlando-fl/venues/flora-taverna-at-universal-helios-grand-hotel-a-loews-hotel"
+  }
+ ]
+}
