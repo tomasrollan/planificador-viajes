@@ -422,3 +422,7 @@ html[data-theme="uor"] .bbar.lv-warn .be{background:repeating-linear-gradient(45
 .bcard:hover{border-color:var(--blue)}.bcard.empty{border-style:dashed}
 .blv{font:800 13px var(--fh)}.blv.ok{color:var(--ok)}.blv.warn{color:var(--warn)}.blv.over{color:var(--bad)}
 .sesopt{margin-top:12px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px}.sesopt summary{cursor:pointer;font-weight:700;font-size:13px}
+.pcard{margin-top:8px}
+.bbar.lv-late .be{background:repeating-linear-gradient(45deg,rgba(225,29,72,.65) 0 6px,rgba(225,29,72,.25) 6px 12px)}
+.bit.pq.paid{background:var(--ok-soft);border-color:var(--ok-line)}
+html[data-theme="uor"] .bit.pq.paid{background:var(--ok-soft)}

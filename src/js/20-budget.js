@@ -28,7 +28,7 @@ var Files=(function(){
 })();
 /* limpia archivos que ya no usa ningún ítem (por ejemplo, de ítems eliminados) */
 function filesGc(){
-  var keep={}; S.clients.forEach(function(c){ (c.items||[]).forEach(function(i){ if(i.file&&i.file.id) keep[i.file.id]=1; }); });
+  var keep={}; S.clients.forEach(function(c){ (c.items||[]).forEach(function(i){ if(i.file&&i.file.id) keep[i.file.id]=1; }); ((c.pay&&c.pay.plan)||[]).forEach(function(q){ if(q.file&&q.file.id) keep[q.file.id]=1; }); });
   Files.keys().then(function(ks){ ks.forEach(function(k){ if(!keep[k]) Files.del(k); }); });
 }
 function openFile(id,name){
@@ -68,7 +68,7 @@ function budState(s){ return s.level==='over'?'<b class="blv over">Te pasás por
 function budCard(c,pg){
   var chip='<span class="chip gray" title="Comidas elegidas en la agenda">'+I('utensils')+' '+pg.filled+' de '+pg.cap+' comidas</span>';
   if(BC.hasBudget(c)){ var s=budSum(c);
-    return '<a class="bcard" href="#cliente-'+c.id+'" data-openpres="'+c.id+'"><div class="row between" style="align-items:baseline"><span class="tiny muted" style="font-weight:800;text-transform:uppercase;letter-spacing:.05em">Presupuesto</span>'+chip+'</div>'+budBar(s)+'<div class="row between small" style="margin-top:6px"><span>'+BC.money(s.committed)+' de '+BC.money(s.total)+'</span>'+budState(s)+'</div>'+(s.toPay>0?'<div class="tiny muted" style="margin-top:2px">Por pagar: '+BC.money(s.toPay)+'</div>':'')+'</a>'; }
+    return '<a class="bcard" href="#cliente-'+c.id+'" data-openpres="'+c.id+'"><div class="row between" style="align-items:baseline"><span class="tiny muted" style="font-weight:800;text-transform:uppercase;letter-spacing:.05em">Presupuesto</span>'+chip+'</div>'+budBar(s)+'<div class="row between small" style="margin-top:6px"><span>'+BC.money(s.committed)+' de '+BC.money(s.total)+'</span>'+budState(s)+'</div>'+'</a>'; }
   var any=(c.items||[]).length;
   return '<div class="bcard empty"><div class="row between" style="align-items:center"><a href="#cliente-'+c.id+'" data-openpres="'+c.id+'" class="lnk" style="font-weight:800">'+I('plus')+' Definir presupuesto</a>'+chip+'</div>'+(any?'<div class="tiny muted" style="margin-top:6px">Comprometido: '+BC.money(budSum(c).committed)+'</div>':'')+'</div>';
 }
@@ -83,7 +83,7 @@ function budgetPanel(c){
       '<div class="row" style="gap:8px;align-items:flex-end;margin-top:12px;flex-wrap:wrap"><div style="flex:1 1 220px"><label class="f" for="bd-new-total">Presupuesto total del cliente (US$)</label><input type="text" inputmode="decimal" id="bd-new-total" placeholder="Ej: 8000"></div><button class="btn" data-bdcreate="'+c.id+'">Definir presupuesto</button></div>';
   } else {
     h+='<div class="bhead">'+budBar(s)+'<div class="blegend"><span><i class="lg c"></i>Confirmado</span><span><i class="lg e"></i>Estimado</span><span><i class="lg r"></i>Libre</span></div></div>'+
-      '<div class="bkpis"><div class="bk"><span>Presupuesto</span><b>'+BC.money(s.total)+'</b></div><div class="bk"><span>Comprometido</span><b>'+BC.money(s.committed)+'</b><em>'+s.usedPct+'%</em></div><div class="bk '+(s.level==='over'?'bad':s.level==='warn'?'warn':'ok')+'"><span>'+(s.level==='over'?'Te pasás por':'Disponible')+'</span><b>'+BC.money(s.level==='over'?s.over:s.available)+'</b></div><div class="bk"><span>Confirmado</span><b>'+BC.money(s.confirmed)+'</b></div><div class="bk"><span>Por pagar</span><b>'+BC.money(s.toPay)+'</b><em>de lo confirmado</em></div></div>';
+      '<div class="bkpis"><div class="bk"><span>Presupuesto</span><b>'+BC.money(s.total)+'</b></div><div class="bk"><span>Comprometido</span><b>'+BC.money(s.committed)+'</b><em>'+s.usedPct+'%</em></div><div class="bk '+(s.level==='over'?'bad':s.level==='warn'?'warn':'ok')+'"><span>'+(s.level==='over'?'Te pasás por':'Disponible')+'</span><b>'+BC.money(s.level==='over'?s.over:s.available)+'</b></div><div class="bk"><span>Confirmado</span><b>'+BC.money(s.confirmed)+'</b></div><div class="bk"><span>Estimado</span><b>'+BC.money(s.estimated)+'</b><em>sin confirmar</em></div></div>';
     if(s.level==='over') h+='<div class="notice bad">'+I('info')+'<div>Con lo cargado se supera el presupuesto por <b>'+BC.money(s.over)+'</b>. Hablalo con el cliente antes de confirmar más.</div></div>';
     else if(s.level==='warn') h+='<div class="notice warn">'+I('info')+'<div>Ya se usó el <b>'+s.usedPct+'%</b> del presupuesto: quedan <b>'+BC.money(s.available)+'</b>.</div></div>';
     var cats=BC.CATS.filter(function(k){ var x=s.byCat[k.k]; return x.total>0||x.target>0; });
@@ -95,11 +95,11 @@ function budgetPanel(c){
       '<label><input type="checkbox" id="bd-share"'+(b.share?' checked':'')+'> <span>Mostrarle la barra de presupuesto al cliente<span class="tiny muted" style="display:block;font-weight:500">El cliente ve el total y lo comprometido, nunca los montos de cada ítem.</span></span></label></div>';
   }
   /* ítems */
-  var f=UI.bd.f, list=rows.filter(function(r){ return f==='all'||(f==='pend'?(r.status==='confirmado'&&!r.paid&&r.amount>0):r.cat===f); });
+  var f=UI.bd.f, list=rows.filter(function(r){ return f==='all'||r.cat===f; });
   list.sort(function(a,b){ return (a.date||'9999').localeCompare(b.date||'9999')||(a.at||0)-(b.at||0); });
   var present=BC.CATS.filter(function(k){ return rows.some(function(r){return r.cat===k.k}); });
   h+='<div class="row between" style="margin-top:18px;flex-wrap:wrap;gap:8px"><h4 style="font:900 15px var(--fh)">Ítems cargados ('+rows.length+')</h4><div class="row" style="gap:8px">'+(rows.length?'<button class="btn line sm" data-bdcopy="'+c.id+'">'+I('copy')+' Copiar resumen</button><button class="btn line sm" data-bdcsv="'+c.id+'">Exportar CSV</button>':'')+'</div></div>';
-  if(rows.length>1) h+='<div class="pills" style="margin:10px 0"><button class="pill'+(f==='all'?' on':'')+'" data-bdf="all">Todos</button><button class="pill'+(f==='pend'?' on':'')+'" data-bdf="pend">Por pagar</button>'+present.map(function(k){ return '<button class="pill'+(f===k.k?' on':'')+'" data-bdf="'+k.k+'">'+esc(k.n)+'</button>'; }).join('')+'</div>';
+  if(rows.length>1) h+='<div class="pills" style="margin:10px 0"><button class="pill'+(f==='all'?' on':'')+'" data-bdf="all">Todos</button>'+present.map(function(k){ return '<button class="pill'+(f===k.k?' on':'')+'" data-bdf="'+k.k+'">'+esc(k.n)+'</button>'; }).join('')+'</div>';
   if(!rows.length) h+='<div class="empty" style="margin-top:10px">Todavía no cargaste nada. Agregá el hotel, las entradas o una reserva con su PDF.</div>';
   else h+='<div class="blist">'+list.map(function(r){ return budItemRow(c,r); }).join('')+(list.length?'':'<div class="empty">No hay ítems con este filtro.</div>')+'</div>';
   if(items.some(function(i){return i.file})) h+='<div class="notice gold" style="margin-top:12px">'+I('info')+'<div><b>Los PDF se guardan solo en este navegador.</b> Todavía no hay servidor: no entran en la copia de seguridad ni los ve el cliente desde su celular. Mandáselos por WhatsApp. Cuando conectemos el almacenamiento en la nube se suben solos.</div></div>';
@@ -107,7 +107,7 @@ function budgetPanel(c){
 }
 function budItemRow(c,r){
   var k=BC.catOf(r.cat), conf=r.status==='confirmado';
-  var chips='<span class="chip '+(conf?'ok':'warn')+'">'+(conf?'Confirmado':'Estimado')+'</span>'+(conf&&r.amount>0?'<span class="chip '+(r.paid?'ok':'gray')+'">'+(r.paid?'Pagado':'Por pagar')+'</span>':'')+(r.credits>0?'<span class="chip gold">'+r.credits+' crédito'+(r.credits===1?'':'s')+'</span>':'')+(r.auto?'<span class="chip gray">Automático</span>':'')+(r.visible?'<span class="chip gray" title="El cliente lo ve en Mi viaje">'+I('user')+' Visible</span>':'')+(r.file?'<button class="chip lnkchip" data-bdfile="'+c.id+'|'+r.id+'" title="'+esc(r.file.name)+'">'+I('ext')+' '+esc(r.file.name.length>22?r.file.name.slice(0,19)+'…':r.file.name)+' · '+BC.sizeLabel(r.file.size)+'</button>':'');
+  var chips='<span class="chip '+(conf?'ok':'warn')+'">'+(conf?'Confirmado':'Estimado')+'</span>'+(r.credits>0?'<span class="chip gold">'+r.credits+' crédito'+(r.credits===1?'':'s')+'</span>':'')+(r.auto?'<span class="chip gray">Automático</span>':'')+(r.visible?'<span class="chip gray" title="El cliente lo ve en Mi viaje">'+I('user')+' Visible</span>':'')+(r.file?'<button class="chip lnkchip" data-bdfile="'+c.id+'|'+r.id+'" title="'+esc(r.file.name)+'">'+I('ext')+' '+esc(r.file.name.length>22?r.file.name.slice(0,19)+'…':r.file.name)+' · '+BC.sizeLabel(r.file.size)+'</button>':'');
   return '<div class="bit'+(r.auto?' auto':'')+'"><span class="bci">'+I(k.ic)+'</span><div class="bim"><div class="row between" style="align-items:flex-start;gap:10px"><div style="min-width:0"><b>'+esc(r.title)+'</b><div class="tiny muted">'+esc(k.n)+(r.date?' · '+esc(fmtShort(r.date)):'')+(r.conf?' · Conf. '+esc(r.conf):'')+'</div></div><div class="bamt">'+(r.amount>0?BC.money(r.amount):'<span class="muted">sin monto</span>')+'</div></div><div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">'+chips+'</div>'+(r.note?'<div class="tiny muted" style="margin-top:4px">'+esc(r.note)+'</div>':'')+
     (r.auto?'':'<div class="row" style="gap:6px;margin-top:8px"><button class="btn line sm" data-bditem="'+c.id+'|'+r.id+'">Editar</button><button class="btn danger sm" data-bddel="'+c.id+'|'+r.id+'">'+I('trash')+' Eliminar</button></div>')+'</div></div>';
 }
@@ -124,7 +124,7 @@ function openItemModal(cid,id){
    '<div><label class="f" for="bi-amount">Monto total (US$)</label><input type="text" inputmode="decimal" id="bi-amount" value="'+(v.amount?esc(String(v.amount).replace('.',',')):'')+'" placeholder="Ej: 2450"></div>'+
    '<div><label class="f" for="bi-date">Fecha</label><input type="date" id="bi-date" value="'+esc(v.date||'')+'"></div>'+
    '<div><label class="f" for="bi-conf">N.º de confirmación</label><input type="text" id="bi-conf" maxlength="40" value="'+esc(v.conf||'')+'"></div>'+
-   '<div id="bi-paidrow"'+(v.status==='confirmado'?'':' hidden')+'><label class="small" style="display:flex;gap:8px;align-items:center;margin-top:26px;font-weight:700"><input type="checkbox" id="bi-paid"'+(v.paid?' checked':'')+'> Ya está pagado</label></div>'+
+   
    (plan?'<div id="bi-credrow"'+(v.cat==='comida'?'':' hidden')+'><label class="f" for="bi-credits">Créditos del plan que usa (por persona)</label><input type="number" id="bi-credits" min="0" max="99" value="'+(v.credits||0)+'"><div class="tiny muted">Suma contra los créditos disponibles del cliente. 1 por comida de mesa, 2 en shows y cenas especiales.</div></div>':'')+
    '</div>'+
    '<label class="f" style="margin-top:12px" for="bi-file">Comprobante (PDF o imagen, hasta 10 MB)</label>'+(it&&it.file?'<div class="row" id="bi-curfile" style="gap:8px;margin-bottom:6px"><span class="chip">'+I('ext')+' '+esc(it.file.name)+'</span><button class="btn line sm" data-bdrmfile="1">Quitar</button></div>':'')+'<input type="file" id="bi-file" accept=".pdf,image/*"><div class="tiny muted" style="margin-top:4px">Se guarda solo en este navegador hasta que haya servidor.</div>'+
@@ -156,7 +156,7 @@ function budSaveTotal(cid){
 }
 function itemSave(cid){
   var c=client(cid); if(!c) return; var old=UI.bd.edit?(c.items||[]).filter(function(i){return i.id===UI.bd.edit})[0]:null, gv=function(s){ var e=$(s); return e?e.value:''; };
-  var o={id:old?old.id:'',cat:gv('#bi-cat'),title:gv('#bi-title'),date:gv('#bi-date'),amount:gv('#bi-amount'),status:gv('#bi-status'),paid:!!($('#bi-paid')||{}).checked,conf:gv('#bi-conf'),credits:gv('#bi-credits'),visible:!!($('#bi-vis')||{}).checked,note:gv('#bi-note'),at:old?old.at:NOW(),by:old?old.by:'agus',file:UI.bd.rm?null:(old?old.file:null)};
+  var o={id:old?old.id:'',cat:gv('#bi-cat'),title:gv('#bi-title'),date:gv('#bi-date'),amount:gv('#bi-amount'),status:gv('#bi-status'),paid:false,conf:gv('#bi-conf'),credits:gv('#bi-credits'),visible:!!($('#bi-vis')||{}).checked,note:gv('#bi-note'),at:old?old.at:NOW(),by:old?old.by:'agus',file:UI.bd.rm?null:(old?old.file:null)};
   if(old&&old.slotRef) o.slotRef=old.slotRef;
   var r=BC.cleanItem(o,NOW(),'agus'); if(!r.ok){ toast(r.errors[0]); return; } var it=r.item; if(old&&old.slotRef) it.slotRef=old.slotRef;
   var f=UI.bd.file; if(f){ var err=BC.checkFile(f); if(err){ toast(err); return; } it.file={id:'f'+uid()+uid(),name:f.name,size:f.size,type:f.type||''}; }
@@ -175,7 +175,7 @@ function itemDel(cid,id){
 function budFromSlot(c,d,mealKey,r,conf,cost,credits){
   if(!(cost>0)&&!(credits>0)) return;
   c.items=c.items||[]; var ref=d.date+'|'+mealKey, cur=c.items.filter(function(i){return i.slotRef===ref})[0];
-  var o=BC.cleanItem({id:cur?cur.id:'',cat:'comida',title:r.name+' · '+fmtShort(d.date)+' '+mealLabel(mealKey),date:d.date,amount:cost||0,status:'confirmado',paid:cur?cur.paid:false,conf:conf,credits:credits||0,visible:cur?cur.visible:false,note:cur?cur.note:'',file:cur?cur.file:null,at:cur?cur.at:NOW(),by:'agus'},NOW(),'agus').item; o.slotRef=ref;
+  var o=BC.cleanItem({id:cur?cur.id:'',cat:'comida',title:r.name+' · '+fmtShort(d.date)+' '+mealLabel(mealKey),date:d.date,amount:cost||0,status:'confirmado',paid:false,conf:conf,credits:credits||0,visible:cur?cur.visible:false,note:cur?cur.note:'',file:cur?cur.file:null,at:cur?cur.at:NOW(),by:'agus'},NOW(),'agus').item; o.slotRef=ref;
   if(cur) c.items[c.items.indexOf(cur)]=o; else c.items.push(o);
 }
 function budCopy(cid){ var c=client(cid); if(!c) return; copy(BC.shareText(c.name,budSum(c),budRows(c)),'Resumen copiado: pegalo en WhatsApp'); }
@@ -200,7 +200,6 @@ CLICK.push(
 document.addEventListener('change',function(e){
   var t=e.target; if(!t||!t.id) return;
   if(t.id==='bi-cat'){ var cr=$('#bi-credrow'); if(cr) cr.hidden=t.value!=='comida'; }
-  else if(t.id==='bi-status'){ var pr=$('#bi-paidrow'); if(pr) pr.hidden=t.value!=='confirmado'; }
   else if(t.id==='bi-file'){ var f=t.files&&t.files[0]; if(!f){ UI.bd.file=null; return; } var err=BC.checkFile(f); if(err){ toast(err); t.value=''; UI.bd.file=null; return; } UI.bd.file=f; }
   else if(t.id==='bd-auto'||t.id==='bd-share'){ var c=client(UI.cid); if(!c||!c.budget) return;
     if(t.id==='bd-auto'){ c.budget.autoMeals=t.checked; logAct(c.id,'Presupuesto: '+(t.checked?'suma':'dejó de sumar')+' las comidas automáticas','evento'); }

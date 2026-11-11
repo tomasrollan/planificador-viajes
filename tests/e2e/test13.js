@@ -17,7 +17,7 @@ const cards=()=>[...d.querySelectorAll('#cl-grid .ccard')].map(x=>x.querySelecto
  ok(cards().length===5,'5 clientes');
  ok(cards()[0]==='Familia Rodríguez','ordena por fecha de viaje más próxima ('+cards()[0]+')');
  ok(/\d+ de \d+ comidas/.test(d.querySelector('.ccard').textContent)&&/Viaja en \d+ días/.test(d.querySelector('.ccard').textContent)&&!d.querySelector('.cprog'),'cada cliente muestra cuándo viaja y las comidas pasan a ser un dato chico (ya no la barra principal)');
- ok(d.querySelectorAll('.ccard .bbar').length===4&&/Definir presupuesto/.test(d.querySelector('.cgrid, .ccard').parentElement.textContent),'la barra principal de la tarjeta es el presupuesto (4 con presupuesto, 1 con «Definir presupuesto»)');
+ ok(d.querySelectorAll('.ccard .bcard:not(.pcard):not(.empty) .bbar').length===4&&/Definir presupuesto/.test(d.querySelector('.cgrid, .ccard').parentElement.textContent),'la barra principal de la tarjeta es el presupuesto (4 con presupuesto, 1 con «Definir presupuesto»)');
  ok(!d.querySelector('.cnext'),'sin titular de comidas que faltan');
  ok([...d.querySelectorAll('.ccard')].some(x=>/Universal: (aún es pronto|desde|ya se puede)/.test(x.textContent)),'los clientes de Universal muestran su estado de reserva');
  // búsqueda

@@ -113,7 +113,7 @@ function historyPanel(c){
 /* ---------- duplicar cliente ---------- */
 function dupClient(id){
   var c=client(id); if(!c) return; var n=JSON.parse(JSON.stringify(c));
-  n.id=uid(); n.token=genToken('cliente'); n.pin=genPin(); n.name=c.name+' (copia)'; n.phone=''; n.notes=''; n.intake=null; n.requests=[]; n.favs={}; n.log=[]; n.budget=null; n.items=[]; n.travelers=[{id:'t1',name:'Viajero 1',type:'adulto',allergies:''}];
+  n.id=uid(); n.token=genToken('cliente'); n.pin=genPin(); n.name=c.name+' (copia)'; n.phone=''; n.notes=''; n.intake=null; n.requests=[]; n.favs={}; n.log=[]; n.budget=null; n.items=[]; n.pay=null; n.travelers=[{id:'t1',name:'Viajero 1',type:'adulto',allergies:''}];
   n.days.forEach(function(d){ MEALS.forEach(function(m){ var s=d.slots[m[0]]; if(s) d.slots[m[0]]={rid:s.rid,state:'idea',time:'',conf:'',by:'agus',locked:false,note:'',sug:s.sug}; }); });
   repo.addClient(n); logAct(n.id,'Creado como copia de '+c.name,'evento'); save(); UI.tab='datos'; location.hash='cliente-'+n.id;
   toast('Copia creada: cargá los viajeros (con sus alergias) y las fechas');

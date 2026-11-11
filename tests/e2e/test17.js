@@ -29,17 +29,17 @@ const boot=(url,seed)=>new JSDOM(html,{runScripts:'dangerously',pretendToBeVisua
  ok(!!d.querySelector('.modal #bi-title')&&!d.querySelector('#bi-credrow'),'modal de ítem; sin plan de comidas no hay campo de créditos');
  click('[data-bdsave]');await sleep(60);ok((cl('c2').items||[]).length===0&&!!d.querySelector('.toast'),'sin título no guarda');
  set('#bi-title','Disney\'s Polynesian · 6 noches');set('#bi-cat','hotel');set('#bi-amount','1.200,50');set('#bi-status','confirmado');
- ok(!d.querySelector('#bi-paidrow').hidden,'al confirmar aparece «Ya está pagado»');
- d.querySelector('#bi-paid').checked=true;set('#bi-conf','POLY-123');d.querySelector('#bi-vis').checked=true;
+ ok(!d.querySelector('#bi-paid'),'el presupuesto ya no tiene «pagado» (eso vive en Pagos)');
+ set('#bi-conf','POLY-123');d.querySelector('#bi-vis').checked=true;
  click('[data-bdsave]');await sleep(150);
  let it=cl('c2').items[0];
- ok(it&&it.amount===1200.5&&it.status==='confirmado'&&it.paid&&it.conf==='POLY-123'&&it.visible&&it.cat==='hotel','guarda el ítem con monto, estado, pago, código y visibilidad');
+ ok(it&&it.amount===1200.5&&it.status==='confirmado'&&it.conf==='POLY-123'&&it.visible&&it.cat==='hotel','guarda el ítem con monto, estado, código y visibilidad');
  ok(/US\$ 1\.200,50/.test(T())&&d.querySelector('.bbar')&&/Confirmado/.test(T()),'el monto impacta en la barra y en los KPIs');
  ok(cl('c2').log.some(e=>/Presupuesto: agregó/.test(e.t)),'queda en el historial');
  // ---- estimado, sin monto y filtros
  click('[data-bdnew]');await sleep(60);set('#bi-title','Entradas 4 días');set('#bi-cat','parques');set('#bi-amount','900');click('[data-bdsave]');await sleep(120);
  ok(cl('c2').items.length===2&&d.querySelectorAll('.bit').length===2,'segundo ítem (estimado)');
- ok(/Por pagar/.test(T())&&d.querySelectorAll('.bk').length===5,'KPIs: presupuesto, comprometido, disponible, confirmado, por pagar');
+ ok(/Estimado/.test(T())&&d.querySelectorAll('.bk').length===5,'KPIs: presupuesto, comprometido, disponible, confirmado, estimado');
  click('[data-bdf="parques"]');await sleep(80);ok(d.querySelectorAll('.bit').length===1&&/Entradas/.test(d.querySelector('.bit').textContent),'el filtro por tipo funciona');
  click('[data-bdf="all"]');await sleep(60);
  // ---- PDF
@@ -90,6 +90,34 @@ const boot=(url,seed)=>new JSDOM(html,{runScripts:'dangerously',pretendToBeVisua
  const hasCost=!!d.querySelector('#ses-cost');ok(hasCost,'la sesión de reservas tiene «Sumar al presupuesto»');
  if(hasCost){const cur=d.querySelector('[data-sessave]').getAttribute('data-sessave').split('|')[0];const nb=(cl(cur).items||[]).length;set('#ses-time','19:00');set('#ses-conf','ZZ9');if(d.querySelector('#ses-cost'))set('#ses-cost','85');click('[data-sessave]');await sleep(150);
   const ni=cl(cur).items.filter(x=>x.slotRef);ok(ni.length>=1&&ni[ni.length-1].amount===85&&ni[ni.length-1].conf==='ZZ9'&&ni[ni.length-1].status==='confirmado','la reserva guardada crea el ítem con costo y confirmación');}
+ // ---- pagos (cobranza)
+ await open('c2');click('[data-tab="pagos"]');await sleep(120);
+ ok(/Pagos del viaje/.test(T())&&/Todavía no cargaste el precio/.test(T()),'pestaña Pagos vacía invita a armar el plan');
+ click('[data-pnew]');await sleep(80);set('#pp-price','4.800');set('#pp-down','800');set('#pp-n','4');set('#pp-first','2027-01-15');set('#pp-downdue','2026-12-01');
+ ok(/Anticipo de[\s\S]*800[\s\S]*4 cuotas[\s\S]*1\.000/.test(d.querySelector('#pp-prev').textContent),'la vista previa arma anticipo + cuotas iguales');
+ click('[data-psaveplan]');await sleep(150);
+ const pay=cl('c2').pay;ok(pay.price===4800&&pay.plan.length===5&&pay.plan[0].n==='Anticipo'&&pay.plan.reduce((a,q)=>a+q.amount,0)===4800&&pay.share===true,'guarda precio y 5 pagos que suman el precio');
+ ok(/Falta cobrar/.test(T())&&/US\$ 4\.800/.test(T())&&d.querySelectorAll('.pq').length===5,'KPIs y lista de cuotas');
+ click('[data-ppaid="c2|'+pay.plan[0].id+'"]');await sleep(80);set('#pp-method','tarjeta');
+ const rec=new w.File([new Uint8Array([37,80,68,70])],'seña.pdf',{type:'application/pdf'});const pf=d.querySelector('#pq-file');Object.defineProperty(pf,'files',{value:[rec],configurable:true});pf.dispatchEvent(new w.Event('change',{bubbles:true}));await sleep(30);
+ click('[data-psavepaid]');await sleep(250);
+ let q0=cl('c2').pay.plan[0];ok(!!q0.paidAt&&q0.method==='tarjeta'&&q0.file&&q0.file.name==='seña.pdf','marca el anticipo como pagado con medio y comprobante');
+ ok(/Cobrado/.test(T())&&/17%|16%/.test(T())&&/Pagada/.test(T())&&/seña\.pdf/.test(T()),'se actualiza lo cobrado y se ve el comprobante');
+ click('[data-pundo="c2|'+q0.id+'"]');await sleep(80);ok(!cl('c2').pay.plan[0].paidAt,'se puede deshacer un pago');
+ click('[data-ppaid="c2|'+q0.id+'"]');await sleep(60);click('[data-psavepaid]');await sleep(150);
+ click('[data-pquota="c2|"]');await sleep(60);set('#pq-n','Extra');set('#pq-amount','50');click('[data-psavequota]');await sleep(60);ok(cl('c2').pay.plan.length===5,'cuota sin fecha no guarda');set('#pq-due','2027-06-01');click('[data-psavequota]');await sleep(120);
+ ok(cl('c2').pay.plan.length===6&&/faltan asignar|más que el precio/.test(T()),'cuota extra y aviso de que las cuotas no suman el precio');
+ const xid=cl('c2').pay.plan.find(x=>x.n==='Extra').id;click('[data-pdel="c2|'+xid+'"]');await sleep(60);ok(cl('c2').pay.plan.length===5,'elimina la cuota extra');
+ click('[data-premind="c2|'+cl('c2').pay.plan[1].id+'"]');await sleep(60);ok(/Cuota 1 de 4/i.test(w.__copied||'')&&/comprobante/.test(w.__copied),'copia el recordatorio para WhatsApp');
+ click('[data-pcopy]');await sleep(40);ok(/Pagos del viaje · Pareja Pérez/.test(w.__copied),'copia el resumen de pagos');
+ // cuota vencida: panel y tarjeta
+ const sp=cl('c1').pay;ok(sp.plan.some(q=>!q.paidAt&&q.due<new Date().toISOString().slice(0,10)),'la demo trae una cuota vencida');
+ w.location.hash='#panel';await sleep(250);
+ ok(/Cuota vencida · Familia Rodríguez/.test(T()),'la cuota vencida aparece en «Para hacer hoy»');
+ ok(/vencida/.test(card('Rodríguez').textContent)&&!!card('Rodríguez').querySelector('.pcard .bbar.lv-late'),'y la tarjeta del cliente la marca en rojo');
+ ok(!!card('Gómez').querySelector('.pcard')&&/Próxima/.test(card('Gómez').textContent),'cliente al día: muestra la próxima cuota');
+ ok(!card('Torres').querySelector('.pcard'),'sin plan de pagos no muestra la línea');
+ click(card('Gómez').querySelector('[data-openpay]'));await sleep(250);ok(/Pagos del viaje/.test(T()),'la línea de cobranza abre la pestaña Pagos');
  // ---- duplicar cliente limpia el presupuesto
  await open('c3');click('[data-dupclient="c3"]');await sleep(200);
  const cp=state().clients.find(x=>/copia/.test(x.name));ok(cp&&!cp.budget&&(cp.items||[]).length===0,'duplicar un cliente no copia presupuesto ni ítems');
@@ -109,6 +137,10 @@ const boot=(url,seed)=>new JSDOM(html,{runScripts:'dangerously',pretendToBeVisua
  ok2(!!dd.querySelector('.blist')&&!/US\$|3\.?400|1\.?620/.test(dd.querySelector('.blist').textContent),'nunca muestra el monto de cada ítem');
  ok2(!/Fireworks Dessert Party/.test(TT()),'no muestra lo que no se marcó como visible');
  ok2(/Presupuesto del viaje/.test(TT())&&!!dd.querySelector('.bbar'),'muestra la barra porque la agencia la compartió');
+ ok2(!!dd.querySelector('[data-sub="viaje|pagos"]'),'el cliente ve «Mis pagos»');
+ dd.querySelector('[data-sub="viaje|pagos"]').click();await sleep(120);
+ ok2(/Mis pagos/.test(TT())&&/Pagaste US\$ 2\.000/.test(TT())&&/Falta pagar US\$ 6\.800/.test(TT())&&/Anticipo/.test(TT())&&/Cuota 4 de 4/.test(TT()),'muestra precio, lo pagado, lo que falta y las cuotas');
+ const sp2=JSON.parse(ww.localStorage.getItem('agency_planner_v3'));sp2.clients.find(x=>x.id==='c3').pay.share=false;ww.localStorage.setItem('agency_planner_v3',JSON.stringify(sp2));
  const st2=JSON.parse(ww.localStorage.getItem('agency_planner_v3'));st2.clients.find(x=>x.id==='c3').budget.share=false;ww.localStorage.setItem('agency_planner_v3',JSON.stringify(st2));
  console.log(o2.join('\n'));process.exit(process.exitCode?1:0);
 })().catch(e=>{console.log(out.join('\n'));console.log('ERR ['+e.message+']\n'+e.stack.split('\n').slice(0,4).join('\n'));process.exit(1)});

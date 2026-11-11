@@ -9,6 +9,7 @@ function panelToday(){
   Object.keys(by).forEach(function(k){ var g=by[k]; it.push({p:2,ic:'list',cls:'warn',t:'Reservar ya · '+g.c.name,s:g.n+(g.n===1?' comida lista para reservar: ':' comidas listas para reservar: ')+g.names.slice(0,2).join(', ')+(g.n>2?'…':''),b:'<a class="btn sm" href="#reservas">Modo reserva</a>'}); });
   S.clients.forEach(function(c){ if(c.intake&&c.intake.done&&!c.intake.reviewed) it.push({p:3,ic:'user',cls:'warn',t:'Revisar formulario · '+c.name,s:'El cliente completó el formulario de ingreso.',b:'<button class="btn sm" data-opendatos="'+c.id+'">Revisar</button>'}); });
   Object.keys(by2).forEach(function(k){ var g=by2[k]; it.push({p:5,ic:'bell',cls:'',t:'Abren las reservas · '+g.c.name,s:fmtShort(g.w.open)+' · en '+daysTo(g.w.open)+' días · '+g.n+' por reservar',b:'<a class="btn ice sm" href="#cliente-'+g.c.id+'">Abrir agenda</a>'}); });
+  payAlerts().forEach(function(x){ it.push(x); });
   var sc=staleCount(); if(sc) it.push({p:6,ic:'refresh',cls:'warn',t:'Datos del catálogo para refrescar',s:sc+(sc===1?' dato tiene':' datos tienen')+' más de 30 días (menús, horarios, transporte o enlaces).',b:'<button class="btn ice sm" data-gofresh="1">Ver cuáles</button>'});
   it.sort(function(a,b){return a.p-b.p});
   return it;
@@ -25,7 +26,7 @@ function clientCard(c){
   return '<div class="card ccard"><div class="row between" style="align-items:flex-start"><div style="min-width:0"><h4 style="font-size:17px;font-weight:800">'+esc(c.name)+'</h4><div class="muted small" style="margin-top:4px">'+I('calendar')+' '+fmtShort(c.start)+' → '+fmtShort(c.end)+' · <b>'+tripWhen(c)+'</b></div></div><span class="row" style="gap:6px;justify-content:flex-end">'+destChips(c)+'</span></div>'+
    '<div class="muted small" style="margin:6px 0 10px">'+I('hotel')+' '+esc(hotelLine(c)||'sin hotel')+' · '+c.travelers.length+' viajeros · '+esc(MODES[c.mode])+(hasDest(c,'wdw')?' · '+esc(PLANS[c.plan].n):'')+'</div>'+
    '<div class="row" style="gap:6px">'+resChip(c)+'<span class="chip ok">'+pg.res+(pg.res===1?' reservada':' reservadas')+'</span>'+(form?'<span class="chip warn">'+I('user')+' formulario recibido</span>':'')+(algList(c).length?'<span class="chip warn">'+I('shield')+' alergias</span>':'')+(nc?'<span class="chip warn">'+nc+(nc===1?' caso abierto':' casos abiertos')+'</span>':'')+'</div>'+
-   budCard(c,pg)+
+   budCard(c,pg)+payLine(c)+
    '<div class="row" style="margin-top:12px"><a class="btn" href="#cliente-'+c.id+'">'+I('calendar')+' Abrir agenda</a><button class="btn ice" data-viewas="'+c.id+'">Ver como cliente</button></div></div>';
 }
 function clientsGrid(){
@@ -66,7 +67,7 @@ function vPanel(){
 function vClienteEdit(){
   var c=client(UI.cid); if(!c) return '<main class="wrap"><div class="empty">Cliente no encontrado. <a href="#panel">Volver</a></div></main>';
   var pend=casesOf(c.id).filter(isOpen).length;
-  var tabs=[['agenda','calendar','Agenda'],['datos','user','Datos del viaje'],['link','link','Link y PIN'],['trans','bus','Transporte'],['pres','bag','Presupuesto'],['pedidos','chat','Casos'+(pend?' ('+pend+')':'')],['hist','clock','Historial']];
+  var tabs=[['agenda','calendar','Agenda'],['datos','user','Datos del viaje'],['link','link','Link y PIN'],['trans','bus','Transporte'],['pres','bag','Presupuesto'],['pagos','ticket','Pagos'],['pedidos','chat','Casos'+(pend?' ('+pend+')':'')],['hist','clock','Historial']];
   var h='<main class="wrap"><div style="display:flex;flex-direction:column;gap:14px"><div class="row between"><div><a href="#panel" class="small" style="font-weight:700;text-decoration:none">'+I('back')+' Panel</a><h2 style="font-size:26px;font-weight:900;margin-top:6px">'+esc(c.name)+'</h2><div class="muted small">'+fmtShort(c.start)+' → '+fmtShort(c.end)+' · '+nights(c)+' noches · '+esc(destsLabel(c))+(hotelLine(c)?' · '+esc(hotelLine(c)):'')+(hasDest(c,'wdw')?' · '+esc(PLANS[c.plan].n):'')+'</div></div><div class="row" style="gap:8px"><button class="btn line" data-dupclient="'+c.id+'" title="Crea otro viaje con el mismo destino, hotel, plan y agenda de ideas (sin viajeros ni alergias)">'+I('copy')+' Duplicar</button><button class="btn ice" data-viewas="'+c.id+'">Ver como cliente</button></div></div>'+
    '<div class="tabs">'+tabs.map(function(t){return '<button data-tab="'+t[0]+'" class="'+(UI.tab===t[0]?'on':'')+'">'+I(t[1])+' '+t[2]+'</button>'}).join('')+'</div></div>';
   if(UI.tab==='agenda') h+=agentSummary(c)+plannerSection(c);
@@ -75,6 +76,7 @@ function vClienteEdit(){
   if(UI.tab==='trans') h+=transportSection(c,true);
   if(UI.tab==='pedidos') h+=pedidosPanel(c);
   if(UI.tab==='pres') h+=budgetPanel(c);
+  if(UI.tab==='pagos') h+=payPanel(c);
   if(UI.tab==='hist') h+=historyPanel(c);
   return h+'</main>';
 }

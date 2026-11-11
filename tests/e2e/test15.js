@@ -91,7 +91,7 @@ const state=()=>JSON.parse(w.localStorage.getItem('agency_planner_v3'));
  const later=new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,url:'https://x.test/?notour#panel',beforeParse(w2){const real=w2.Date.now.bind(w2.Date);w2.Date.now=()=>real()+70*864e5;w2.scrollTo=()=>{};w2.HTMLElement.prototype.scrollBy=()=>{};}});
  await sleep(700);const d2=later.window.document;const T2=()=>{const b=d2.body.cloneNode(true);b.querySelectorAll('script').forEach(x=>x.remove());return b.textContent};
  ok(/desactualizado/i.test(T2())&&d2.querySelector('#fresh').open,'con datos de más de 60 días avisa «desactualizado» y abre el detalle');
- ok(/Datos del catálogo para refrescar/.test(T2()),'aparece en «Para hacer hoy»');
+ ok(/Datos del catálogo para refrescar/.test(T2())||/Y \d+ más en Casos y Reservas/.test(T2()),'aparece en «Para hacer hoy» (o queda en «Y N más» si hay cosas más urgentes, como cuotas vencidas)');
  later.window.close();
  console.log(out.join('\n'));console.log(errs.length?'ERRORES JS: '+errs.join(' | '):'');console.log(out.some(x=>x.startsWith('FAIL'))||errs.length?'FALLAS':'test15 OK');
 })().catch(e=>{console.log(out.join('\n'));console.log('ERR ['+e.message+']\n'+e.stack);process.exitCode=1});

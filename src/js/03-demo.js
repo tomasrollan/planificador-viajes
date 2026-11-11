@@ -46,6 +46,10 @@ function demo(){
   m.budget={total:12000,cur:'USD',cats:{hotel:6000},share:false,autoMeals:false};
   IT(m,'hotel','All-Star Sports · 5 noches',m5,1450,'estimado');
   IT(m,'hotel','Cabana Bay Beach Resort · 4 noches',addDays(m5,5),1300,'estimado');
+  var T0=new Date().toISOString().slice(0,10);
+  function PQ(c,n,off,amount,paidOff,method){ c.pay.plan.push({id:uid(),n:n,due:addDays(T0,off),amount:amount,paidAt:paidOff==null?'':addDays(T0,paidOff),method:paidOff==null?'':(method||'transferencia'),file:null,note:''}); }
+  a.pay={price:7400,share:true,plan:[]}; PQ(a,'Anticipo',-60,1500,-60,'transferencia'); PQ(a,'Cuota 1 de 4',-30,1475,-31,'mercadopago'); PQ(a,'Cuota 2 de 4',-3,1475,null); PQ(a,'Cuota 3 de 4',27,1475,null); PQ(a,'Cuota 4 de 4',57,1475,null);
+  g.pay={price:8800,share:true,plan:[]}; PQ(g,'Anticipo',-12,2000,-12,'tarjeta'); PQ(g,'Cuota 1 de 4',3,1700,null); PQ(g,'Cuota 2 de 4',33,1700,null); PQ(g,'Cuota 3 de 4',63,1700,null); PQ(g,'Cuota 4 de 4',93,1700,null);
   var cases=[
     K(1008,'c4','Conseguir mesa en Toothsome','Consulta','normal','nuevo',12,'Vimos que Toothsome es difícil de reservar. ¿Lo pueden intentar para el segundo día?'),
     K(1001,'c1','Pasar la cena de Liberty Tree a las 18:00','Cambio de reserva','alta','nuevo',5,'¿Se puede pasar la cena a las 18:00? Los chicos se duermen temprano.',{date:a.days[0].date,slot:'dinner'}),

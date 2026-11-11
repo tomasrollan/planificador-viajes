@@ -24,7 +24,7 @@ ci=B.cleanItem({title:'a',file:{id:'f1',name:'x.pdf',size:10,type:'application/p
 // money
 eq(B.money(1234.5),'US$ 1.234,50');eq(B.money(1000000),'US$ 1.000.000');eq(B.money(-50),'-US$ 50');eq(B.money(0),'US$ 0');
 // texto y csv
-const tx=B.shareText('Familia Pérez',B.summary({total:6000},rows),rows);assert(/Familia Pérez/.test(tx)&&/Disponible: US\$ 1\.000/.test(tx)&&/Por pagar: US\$ 1\.200/.test(tx)&&/Hotel: US\$ 3\.500 \(US\$ 3\.000 confirmado\)/.test(tx));n+=4;
+const tx=B.shareText('Familia Pérez',B.summary({total:6000},rows),rows);assert(/Familia Pérez/.test(tx)&&/Disponible: US\$ 1\.000/.test(tx)&&!/Por pagar/.test(tx)&&/Hotel: US\$ 3\.500 \(US\$ 3\.000 confirmado\)/.test(tx));n+=4;
 assert(/Nos pasamos por US\$ 1\.000/.test(B.shareText('X',B.summary({total:4000},rows),rows)));n++;
 const csv=B.toCsv([{cat:'hotel',title:'Poly; "bonito"',amount:1500.5,status:'confirmado',paid:true,conf:'A1'}]).split('\n');eq(csv.length,2);assert(csv[1].indexOf('"Poly; ""bonito"""')>0&&csv[1].indexOf('1500,5')>0&&/;sí;/.test(csv[1]));n+=2;
 // archivos
