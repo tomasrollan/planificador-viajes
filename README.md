@@ -9,10 +9,12 @@ Hoy es **un solo HTML sin framework** (JS vanilla) que se arma con `node build.j
 - `npm run build`: genera `dist/index.html` (≈5 MB, autocontenido) y `dist/_headers`.
 - `node build.js`: genera `planificador.html` en la raíz (ignorado por git).
 
-## Publicar en Cloudflare Pages
+## Publicar en Cloudflare
+Cloudflare lee `wrangler.jsonc` (publica la carpeta `dist/` como sitio estático). Configuración del proyecto en Workers y Pages → Conectar con Git:
 - Build command: `npm run build`
-- Build output directory: `dist`
+- Deploy command: `npx wrangler deploy`
 - Variable de entorno (si hace falta): `NODE_VERSION=22`
+- El nombre del proyecto en Cloudflare tiene que coincidir con `name` en `wrangler.jsonc` (hoy `planificador-viajes`).
 
 ## Estructura
 - `src/index.html`, `src/styles/app.css`, `src/js/01..19` y `99-boot.js`: la aplicación (se concatenan en un solo script).

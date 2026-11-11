@@ -1,0 +1,8 @@
+{
+  // Publica la carpeta dist/ (la genera "npm run build") como sitio estático en Cloudflare.
+  "name": "planificador-viajes",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}
