@@ -1,5 +1,5 @@
 /* ======================= estado de UI ======================= */
-var UI={pf:{q:'',f:'all'},cf:{q:'',cid:'',prio:'',st:'',type:'',view:'board'},role:'agus',route:'panel',cid:null,tab:'agenda',unlocked:{},filt:{q:'',zone:'',tipo:'',cred:'',tier:'',sort:'rating',onlyRated:false},who:null};
+var UI={pf:{q:'',f:'all',st:'',o:'fecha'},cf:{q:'',cid:'',prio:'',st:'',type:'',view:'board'},role:'agus',route:'panel',cid:null,tab:'agenda',unlocked:{},filt:{q:'',zone:'',tipo:'',cred:'',tier:'',sort:'rating',onlyRated:false},who:null};
 function nights(c){ return Dates.nights(c.start,c.end); }
 function fmtDate(iso,long){ return Dates.full(iso,long); }
 function dayName(iso){ return Dates.dayName(iso); }

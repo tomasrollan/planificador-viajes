@@ -9,7 +9,7 @@ function panelToday(){
   Object.keys(by).forEach(function(k){ var g=by[k]; it.push({p:2,ic:'list',cls:'warn',t:'Reservar ya · '+g.c.name,s:g.n+(g.n===1?' comida lista para reservar: ':' comidas listas para reservar: ')+g.names.slice(0,2).join(', ')+(g.n>2?'…':''),b:'<a class="btn sm" href="#reservas">Modo reserva</a>'}); });
   S.clients.forEach(function(c){ if(c.intake&&c.intake.done&&!c.intake.reviewed) it.push({p:3,ic:'user',cls:'warn',t:'Revisar formulario · '+c.name,s:'El cliente completó el formulario de ingreso.',b:'<button class="btn sm" data-opendatos="'+c.id+'">Revisar</button>'}); });
   Object.keys(by2).forEach(function(k){ var g=by2[k]; it.push({p:5,ic:'bell',cls:'',t:'Abren las reservas · '+g.c.name,s:fmtShort(g.w.open)+' · en '+daysTo(g.w.open)+' días · '+g.n+' por reservar',b:'<a class="btn ice sm" href="#cliente-'+g.c.id+'">Abrir agenda</a>'}); });
-  payAlerts().forEach(function(x){ it.push(x); });
+  payAlerts().forEach(function(x){ it.push(x); }); seguimientoAlerts().forEach(function(x){ it.push(x); });
   var sc=staleCount(); if(sc) it.push({p:6,ic:'refresh',cls:'warn',t:'Datos del catálogo para refrescar',s:sc+(sc===1?' dato tiene':' datos tienen')+' más de 30 días (menús, horarios, transporte o enlaces).',b:'<button class="btn ice sm" data-gofresh="1">Ver cuáles</button>'});
   it.sort(function(a,b){return a.p-b.p});
   return it;
@@ -23,20 +23,21 @@ function clientNext(c){
 function tripWhen(c){ var t=todayISO(); if(c.end<t) return 'Viaje terminado'; if(c.start<=t) return 'En viaje'; var n=daysTo(c.start); return 'Viaja en '+n+(n===1?' día':' días'); }
 function clientCard(c){
   var pg=progress(c), nc=casesOf(c.id).filter(isOpen).length, form=c.intake&&c.intake.done&&!c.intake.reviewed;
-  return '<div class="card ccard"><div class="row between" style="align-items:flex-start"><div style="min-width:0"><h4 style="font-size:17px;font-weight:800">'+esc(c.name)+'</h4><div class="muted small" style="margin-top:4px">'+I('calendar')+' '+fmtShort(c.start)+' → '+fmtShort(c.end)+' · <b>'+tripWhen(c)+'</b></div></div><span class="row" style="gap:6px;justify-content:flex-end">'+destChips(c)+'</span></div>'+
+  return '<div class="card ccard"><div class="row between" style="align-items:flex-start"><div style="min-width:0"><h4 style="font-size:17px;font-weight:800">'+esc(c.name)+'</h4>'+(famOf(c)?'<div class="tiny muted" style="font-weight:700;letter-spacing:.04em">'+esc(famOf(c).code)+'</div>':'')+'<div class="muted small" style="margin-top:4px">'+I('calendar')+' '+fmtShort(c.start)+' → '+fmtShort(c.end)+' · <b>'+tripWhen(c)+'</b></div></div><span class="row" style="gap:6px;justify-content:flex-end">'+destChips(c)+'</span></div>'+
    '<div class="muted small" style="margin:6px 0 10px">'+I('hotel')+' '+esc(hotelLine(c)||'sin hotel')+' · '+c.travelers.length+' viajeros · '+esc(MODES[c.mode])+(hasDest(c,'wdw')?' · '+esc(PLANS[c.plan].n):'')+'</div>'+
-   '<div class="row" style="gap:6px">'+famBadge(c)+resChip(c)+'<span class="chip ok">'+pg.res+(pg.res===1?' reservada':' reservadas')+'</span>'+(form?'<span class="chip warn">'+I('user')+' formulario recibido</span>':'')+(algList(c).length?'<span class="chip warn">'+I('shield')+' alergias</span>':'')+(nc?'<span class="chip warn">'+nc+(nc===1?' caso abierto':' casos abiertos')+'</span>':'')+'</div>'+
+   '<div class="row" style="gap:6px;flex-wrap:wrap">'+stageChip(c)+famBadge(c)+resChip(c)+'<span class="chip ok">'+pg.res+(pg.res===1?' reservada':' reservadas')+'</span>'+(form?'<span class="chip warn">'+I('user')+' formulario recibido</span>':'')+(algList(c).length?'<span class="chip warn">'+I('shield')+' alergias</span>':'')+(nc?'<span class="chip warn">'+nc+(nc===1?' caso abierto':' casos abiertos')+'</span>':'')+'</div>'+
    budCard(c,pg)+payLine(c)+
    '<div class="row" style="margin-top:12px"><a class="btn" href="#cliente-'+c.id+'">'+I('calendar')+' Abrir agenda</a><button class="btn ice" data-viewas="'+c.id+'">Ver como cliente</button></div></div>';
 }
 function clientsGrid(){
-  var f=UI.pf, q=(f.q||'').toLowerCase().trim(), today=Dates.todayIn(S.agency.tz,NOW());
+  var f=UI.pf, q=(f.q||'').trim(), today=Dates.todayIn(S.agency.tz,NOW());
   var L=S.clients.filter(function(c){
-    if(q&&(c.name+' '+hotelLine(c)+' '+destsLabel(c)).toLowerCase().indexOf(q)<0) return false;
+    var fm=famOf(c); if(q&&!FU.match(q,[c.name,hotelLine(c),destsLabel(c),c.phone||'',c.travelers.map(function(t){return t.name}).join(' '),fm?fm.code+' '+fm.phone+' '+(fm.tags||[]).join(' '):''],fm?fm.code:'')) return false;
+    if(f.st&&stageOf(c)!==f.st) return false;
     if(f.f==='wdw'||f.f==='uor') return hasDest(c,f.f);
     if(f.f==='pend'){ var pg=progress(c); return pg.pend>0||casesOf(c.id).some(isOpen)||!!(c.intake&&c.intake.done&&!c.intake.reviewed); }
     return true; });
-  L.sort(function(a,b){ var pa=a.end<today, pb=b.end<today; if(pa!==pb) return pa?1:-1; return pa?b.start.localeCompare(a.start):a.start.localeCompare(b.start); });
+  L.sort(function(a,b){ if(f.o==='nombre') return a.name.localeCompare(b.name); var pa=a.end<today, pb=b.end<today; if(pa!==pb) return pa?1:-1; return pa?b.start.localeCompare(a.start):a.start.localeCompare(b.start); });
   return L.length?L.map(clientCard).join(''):(S.clients.length?'<div class="empty" style="grid-column:1/-1">Ningún cliente coincide con la búsqueda.</div>':'<div class="empty" style="grid-column:1/-1"><b>Todavía no cargaste ningún cliente.</b><br>Tocá «Nuevo cliente» arriba. Podés pegar el mensaje de WhatsApp y la app completa destino, fechas y viajeros.</div>');
 }
 function refreshClients(){ var g=$('#cl-grid'); if(!g){ render(); return; } g.innerHTML=clientsGrid(); document.querySelectorAll('[data-pf]').forEach(function(p){ p.classList.toggle('on',p.getAttribute('data-pf')===UI.pf.f); }); }
@@ -46,7 +47,7 @@ function vPanel(){
   var h='<main class="wrap"><section class="hero hero-s"><div class="in"><div class="row between" style="gap:12px;align-items:flex-start"><div><div class="hero-pill">'+I('users')+' Panel de la agencia</div><h2>Hola, Agus</h2><p>'+(items.length?'Hoy tenés <b>'+items.length+(items.length===1?' cosa':' cosas')+'</b> para atender.':'Está todo al día.')+'</p></div><button class="btn gold" data-newclient="1">'+I('plus')+' Nuevo cliente</button></div>'+
    '<div class="stats s4"><div class="stat" role="button" tabindex="0" data-statgo="clientes"><div>Clientes con viaje</div><div>'+S.clients.length+'</div></div><div class="stat" role="button" tabindex="0" data-statgo="reservas"><div>Reservas por hacer</div><div>'+queue.length+'</div></div><div class="stat" role="button" tabindex="0" data-statgo="casos"><div>Casos abiertos</div><div>'+open.length+'</div></div><div class="stat" role="button" tabindex="0" data-statgo="casos"><div>Vencidos / urgentes</div><div>'+late+' / '+urg+'</div></div></div></div></section>';
   var pills=[['all','Todos'],['pend','Con pendientes'],['wdw','Disney'],['uor','Universal']];
-  h+='<section class="sec" id="clientes"><div class="sec-h"><div><span class="eyebrow">Agenda de la agencia</span><h3>'+I('users')+' Mis clientes</h3></div></div><div class="cltool"><input type="text" id="pc-q" placeholder="Buscar cliente u hotel…" value="'+esc(UI.pf.q)+'"><div class="pills">'+pills.map(function(p){ return '<button class="pill'+(UI.pf.f===p[0]?' on':'')+'" data-pf="'+p[0]+'">'+p[1]+'</button>'; }).join('')+'</div></div><div class="grid g2" id="cl-grid">'+clientsGrid()+'</div></section>';
+  h+='<section class="sec" id="clientes"><div class="sec-h"><div><span class="eyebrow">Agenda de la agencia</span><h3>'+I('users')+' Mis clientes</h3></div></div><div class="cltool"><input type="text" id="pc-q" placeholder="Nombre, código (FAM-0001), hotel o teléfono…" aria-label="Buscar cliente" value="'+esc(UI.pf.q)+'"><div class="pills">'+pills.map(function(p){ return '<button class="pill'+(UI.pf.f===p[0]?' on':'')+'" data-pf="'+p[0]+'">'+p[1]+'</button>'; }).join('')+'</div><select id="pc-st" aria-label="Etapa"><option value="">Todas las etapas</option>'+FU.STAGES.map(function(x){ return '<option value="'+x[0]+'"'+(UI.pf.st===x[0]?' selected':'')+'>'+x[1]+'</option>'; }).join('')+'</select><select id="pc-o" aria-label="Orden"><option value="fecha"'+(UI.pf.o==='fecha'?' selected':'')+'>Orden: fecha de viaje</option><option value="nombre"'+(UI.pf.o==='nombre'?' selected':'')+'>Orden: nombre A–Z</option></select></div><div class="grid g2" id="cl-grid">'+clientsGrid()+'</div></section>';
   h+='<section class="sec"><div class="sec-h"><div><span class="eyebrow">Prioridades</span><h3>'+I('bell')+' Para hacer hoy</h3></div></div>';
   if(!items.length) h+='<div class="empty">Todo al día: no hay casos urgentes ni reservas para hacer ahora.</div>';
   else h+='<div class="tlist">'+items.slice(0,6).map(function(x){ return '<div class="trow"><span class="ti '+x.cls+'">'+I(x.ic)+'</span><div class="tb"><b>'+esc(x.t)+'</b><div class="small muted">'+esc(x.s)+'</div></div>'+x.b+'</div>'; }).join('')+'</div>'+(items.length>6?'<div class="tiny muted" style="margin-top:10px">Y '+(items.length-6)+' más en Casos y Reservas.</div>':'');
@@ -67,7 +68,7 @@ function vPanel(){
 function vClienteEdit(){
   var c=client(UI.cid); if(!c) return '<main class="wrap"><div class="empty">Cliente no encontrado. <a href="#panel">Volver</a></div></main>';
   var pend=casesOf(c.id).filter(isOpen).length;
-  var tabs=[['agenda','calendar','Agenda'],['datos','user','Datos del viaje'],['link','link','Link y PIN'],['trans','bus','Transporte'],['pres','bag','Presupuesto'],['pagos','ticket','Pagos'],['pedidos','chat','Casos'+(pend?' ('+pend+')':'')],['hist','clock','Historial']];
+  var tabs=[['agenda','calendar','Agenda'],['datos','user','Datos del viaje'],['link','link','Link y PIN'],['trans','bus','Transporte'],['pres','bag','Presupuesto'],['pagos','ticket','Pagos'],['seg','list','Seguimiento'],['pedidos','chat','Casos'+(pend?' ('+pend+')':'')],['hist','clock','Historial']];
   var h='<main class="wrap"><div style="display:flex;flex-direction:column;gap:14px"><div class="row between"><div><a href="#panel" class="small" style="font-weight:700;text-decoration:none">'+I('back')+' Panel</a><h2 style="font-size:26px;font-weight:900;margin-top:6px">'+esc(c.name)+'</h2><div class="muted small">'+fmtShort(c.start)+' → '+fmtShort(c.end)+' · '+nights(c)+' noches · '+esc(destsLabel(c))+(hotelLine(c)?' · '+esc(hotelLine(c)):'')+(hasDest(c,'wdw')?' · '+esc(PLANS[c.plan].n):'')+'</div></div><div class="row" style="gap:8px"><button class="btn line" data-dupclient="'+c.id+'" title="Crea otro viaje con el mismo destino, hotel, plan y agenda de ideas (sin viajeros ni alergias)">'+I('copy')+' Duplicar</button><button class="btn ice" data-viewas="'+c.id+'">Ver como cliente</button></div></div>'+
    famChip(c)+'<div class="tabs">'+tabs.map(function(t){return '<button data-tab="'+t[0]+'" class="'+(UI.tab===t[0]?'on':'')+'">'+I(t[1])+' '+t[2]+'</button>'}).join('')+'</div></div>';
   if(UI.tab==='agenda') h+=agentSummary(c)+plannerSection(c);
@@ -77,6 +78,7 @@ function vClienteEdit(){
   if(UI.tab==='pedidos') h+=pedidosPanel(c);
   if(UI.tab==='pres') h+=budgetPanel(c);
   if(UI.tab==='pagos') h+=payPanel(c);
+  if(UI.tab==='seg') h+=segPanel(c);
   if(UI.tab==='hist') h+=historyPanel(c);
   return h+'</main>';
 }
