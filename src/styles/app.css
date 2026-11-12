@@ -213,7 +213,11 @@ table.q th{font:900 10px var(--fh);text-transform:uppercase;letter-spacing:.06em
 .qwrap{overflow-x:auto}
 .pin{font:900 28px var(--fh);letter-spacing:8px;color:var(--navy)}
 .gate{max-width:400px;margin:40px auto;text-align:center}
-.gate input{text-align:center;font:900 24px var(--fh);letter-spacing:8px}
+.gate input#pin{text-align:center;font:900 24px var(--fh);letter-spacing:8px}
+.gate input[type=email],.gate input[type=password],.gate input[type=text]:not(#pin){text-align:left;font-family:inherit;font-size:16px;font-weight:500;letter-spacing:0;width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff;outline:none}
+.pwwrap{position:relative}.pwwrap input{padding-right:46px}
+.pwwrap .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:40px;display:flex;align-items:center;justify-content:center;border:0;background:transparent;color:var(--slate600,#475569);border-radius:8px;cursor:pointer}
+.pwwrap .eye:hover{background:#eef2f7}
 .alg{border:1px solid var(--ok-line);background:var(--ok-soft);border-radius:20px;padding:18px}
 .aicon{width:48px;height:48px;border-radius:16px;background:var(--ok-soft);color:#059669;border:1px solid var(--ok-line);display:grid;place-items:center;font-size:22px;flex:none}
 .ico-sq{width:40px;height:40px;border-radius:12px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:18px;flex:none}
@@ -466,5 +470,6 @@ html[data-theme="uor"] .bit.pq.paid{background:var(--ok-soft)}
 .cloudchip svg{width:14px;height:14px}
 .cloudchip.warn{color:#9a6200;border-color:#ecd6a3;background:#fff8e6}
 .cloudchip.err{color:var(--rose,#b4233c);border-color:#f0b9c3;background:#fff0f3}
+.cloudchip.out{color:var(--slate600,#475569)}
 .cloudchip.sync{color:var(--slate600,#475569)}
 @media (max-width:640px){.cloudchip span{display:none}.cloudchip{padding:7px}}

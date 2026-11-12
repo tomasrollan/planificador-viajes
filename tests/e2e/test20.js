@@ -56,8 +56,8 @@ A.click('[data-cl-import]');await sleep(1200);
 const nCl=Object.values(rows).filter(r=>r.kind==='client').length;
 ok(nCl===5&&Object.values(rows).filter(r=>r.kind==='family').length>=3&&!!rows['meta/state'],'subió los 5 viajes, las familias y los datos de la agencia');
 ok(rows['meta/state'].data.agency.name==='Agus Natrone Turismo'&&!rows['meta/state'].data.clients,'meta sin listas');
-ok(/Panel/.test(A.text())&&A.d.querySelector('#cloudchip'),'la app se abre y muestra el estado de la nube');
-ok(/Guardado en la nube/.test(A.d.querySelector('#cloudchip').textContent),'estado: guardado');
+ok(/Panel/.test(A.text())&&A.d.querySelector('#cloudbox')&&A.d.querySelector('[data-cl-logout]'),'la app se abre y tiene el botón «Cerrar sesión»');
+ok(!A.d.querySelector('#cloudchip')&&!/Guardado en la nube/.test(A.text()),'con todo guardado no se muestra ningún cartel de estado');
 ok(!A.d.querySelector('.demo-note')||A.d.querySelector('.demo-note').hidden,'sin cartel de demo en modo nube');
 ok(!!A.ls('agency_cloud_session')&&!!A.ls('agency_cloud_sync'),'la sesión y el estado de sync quedan guardados');
 // editar → sube solo
@@ -105,9 +105,9 @@ const pinKey='portal_pin_'+tok;ok(C.w.sessionStorage.getItem(pinKey)===pin,'el c
 // bloqueo por demasiados intentos del lado del servidor se muestra bien
 // ================= comprobantes =================
 // ================= cierre de sesión =================
-A.click('#cloudchip');await sleep(100);ok(/Tu cuenta y la sincronización/.test(A.text()),'menú de la nube');
 A.click('[data-cl-logout]');await sleep(1500);
 ok(!!A.d.querySelector('#cl-email')&&!A.ls('agency_cloud_session')&&!A.ls('agency_planner_v3')&&!A.ls('agency_cloud_sync'),'cerrar sesión borra los datos de este dispositivo y vuelve al login');
+{const pw=A.d.querySelector('#cl-pass'),eye=A.d.querySelector('[data-cl-eye="cl-pass"]');ok(!!eye&&pw.type==='password','el login tiene el ojito y la contraseña está oculta');eye.click();ok(pw.type==='text','el ojito muestra la contraseña');A.d.querySelector('[data-cl-eye="cl-pass"]').click();ok(pw.type==='password','y la vuelve a ocultar');}
 ok(Object.values(rows).filter(r=>r.kind==='client').length===5,'y en la nube siguen intactos');
 // ================= el modo local no cambia =================
 const L=mk(new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,url:'https://x.test/?notour#panel',beforeParse(w){w.scrollTo=()=>{};w.addEventListener('error',e=>errs.push(String(e.message)))}}));await sleep(500);

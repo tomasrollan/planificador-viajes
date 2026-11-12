@@ -36,8 +36,12 @@ function clAuthed(path,o){ o=Object.assign({},o||{});
 
 /* ---------- estado / chip ---------- */
 var CLST={ok:['Guardado en la nube','ok'],sync:['Sincronizando…','sync'],pending:['Cambios sin subir','warn'],offline:['Sin conexión','warn'],auth:['Volvé a iniciar sesión','err'],idle:['Nube','ok']};
-function cloudChip(){ var p=CLST[CL.st]||CLST.idle; return '<button class="cloudchip '+p[1]+'" id="cloudchip" data-cloudmenu="1" title="Estado de la sincronización">'+I(p[1]==='ok'||p[1]==='sync'?'check':'info')+'<span>'+esc(p[0])+'</span></button>'; }
-function clSetStatus(st){ CL.st=st; var e=$('#cloudchip'); if(e) e.outerHTML=cloudChip(); }
+function cloudChipIn(){ var p=CLST[CL.st]||CLST.idle; if(p[1]==='ok'||p[1]==='sync') return ''; return '<button class="cloudchip '+p[1]+'" id="cloudchip" data-cloudmenu="1" title="Estado de la sincronización">'+I(p[1]==='ok'||p[1]==='sync'?'check':'info')+'<span>'+esc(p[0])+'</span></button>'; }
+/* el estado de la nube solo se muestra cuando hay algo que atender (sin conexión, cambios sin subir, sesión vencida); si todo anda, no hace falta */
+function cloudChip(){ return '<span id="cloudbox">'+cloudChipIn()+'</span>'; }
+function clSetStatus(st){ CL.st=st; var e=$('#cloudbox'); if(e) e.innerHTML=cloudChipIn(); }
+var EYE='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>', EYEOFF='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.9 17.9A10.9 10.9 0 0 1 12 19c-6.4 0-10-7-10-7a18.7 18.7 0 0 1 5-5.7M9.9 5.2A9.7 9.7 0 0 1 12 5c6.4 0 10 7 10 7a18.5 18.5 0 0 1-2.2 3.2M1 1l22 22"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+function pwField(id,auto){ return '<div class="pwwrap"><input type="password" id="'+id+'" autocomplete="'+auto+'" autocapitalize="none" spellcheck="false"><button type="button" class="eye" data-cl-eye="'+id+'" aria-label="Mostrar contraseña" title="Mostrar contraseña">'+EYE+'</button></div>'; }
 function clStatusAfter(r){
   if(r&&r.ok){ CL.err=''; CL.lastOk=Date.now(); clSetStatus(r.pending?'pending':'ok'); }
   else { CL.err=(r&&r.error)||''; clSetStatus((r&&r.auth)?'auth':'offline'); }
@@ -56,7 +60,7 @@ function clGateShell(inner){ return '<main class="wrap"><div class="gate card"><
 function clGateLogin(msg,keep){
   CL.gate=clGateShell('<h2 style="font-weight:900">Planificador de viajes</h2><p class="muted">Entrá con tu mail y tu contraseña.'+(keep?' Tus cambios sin subir siguen guardados en este dispositivo.':'')+'</p>'+
     '<label class="f" style="text-align:left">Mail</label><input type="email" id="cl-email" autocomplete="username" inputmode="email" value="'+esc((CL.sess&&CL.sess.email)||'')+'">'+
-    '<label class="f" style="text-align:left;margin-top:10px">Contraseña</label><input type="password" id="cl-pass" autocomplete="current-password">'+
+    '<label class="f" style="text-align:left;margin-top:10px">Contraseña</label>'+pwField('cl-pass','current-password')+
     '<div id="cl-err" class="small" style="color:var(--rose);min-height:22px;margin-top:6px;font-weight:600">'+esc(msg||'')+'</div>'+
     '<button class="btn" style="width:100%;margin-top:6px;padding:13px" data-cl-login="'+(keep?'keep':'new')+'">Entrar</button><div class="tiny muted" style="margin-top:12px">¿No tenés acceso? Pedíselo a quien administra la agencia.</div>');
   render(); var e=$('#cl-email'); if(e&&!e.value) e.focus(); else if($('#cl-pass')) $('#cl-pass').focus();
@@ -108,8 +112,8 @@ function clAuthHash(){
 }
 function clGatePw(msg){
   CL.gate=clGateShell('<h2 style="font-weight:900">Elegí tu contraseña</h2><p class="muted">Con esta contraseña vas a entrar siempre. Usá al menos 8 caracteres.</p>'+
-    '<label class="f" style="text-align:left">Contraseña nueva</label><input type="password" id="cl-pw1" autocomplete="new-password">'+
-    '<label class="f" style="text-align:left;margin-top:10px">Repetila</label><input type="password" id="cl-pw2" autocomplete="new-password">'+
+    '<label class="f" style="text-align:left">Contraseña nueva</label>'+pwField('cl-pw1','new-password')+
+    '<label class="f" style="text-align:left;margin-top:10px">Repetila</label>'+pwField('cl-pw2','new-password')+
     '<div id="cl-err" class="small" style="color:var(--rose);min-height:22px;margin-top:6px;font-weight:600">'+esc(msg||'')+'</div><button class="btn" style="width:100%;margin-top:6px;padding:13px" data-cl-setpw="1">Guardar y entrar</button>');
   render(); var e=$('#cl-pw1'); if(e) e.focus();
 }
@@ -281,6 +285,7 @@ openFile=function(id,name){
 
 /* ---------- clics y teclado ---------- */
 CLICK.push(
+ {a:'data-cl-eye', f:function(v,t,at,e){ var i=$('#'+v); if(!i) return; var show=i.type==='password'; i.type=show?'text':'password'; var b=t.closest('[data-cl-eye]'); b.innerHTML=show?EYEOFF:EYE; b.setAttribute('aria-label',show?'Ocultar contraseña':'Mostrar contraseña'); b.title=b.getAttribute('aria-label'); i.focus(); }},
  {a:'data-cl-login', f:function(v,t,at,e){ clLogin(($('#cl-email')||{}).value,($('#cl-pass')||{}).value,v==='keep'); }},
  {a:'data-cl-setpw', f:function(){ clSetPw(); }},
  {a:'data-cl-home', f:function(){ CL.gate=null; clStartAgency(); }},
