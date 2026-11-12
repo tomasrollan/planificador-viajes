@@ -1,6 +1,7 @@
 // Seguimiento: etapa, próximo contacto, checklist, postviaje, resumen del viaje, buscador por nombre/código y filtros.
 const {JSDOM}=require('jsdom');const fs=require('fs');
 const html=fs.readFileSync(process.env.HTML||require('path').join(__dirname,'../../planificador.html'),'utf8');
+const iso=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};   // fecha local (la app usa la local, no UTC)
 const errs=[];const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const out=[];const ok=(c,m)=>{out.push((c?'OK  ':'FAIL ')+m);if(!c)process.exitCode=1};
 const boot=(url,seed)=>new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,url,beforeParse(w){w.addEventListener('error',e=>errs.push(String(e.message)));w.scrollTo=()=>{};w.HTMLElement.prototype.scrollBy=()=>{};w.HTMLElement.prototype.scrollIntoView=()=>{};w.URL.createObjectURL=()=>'blob:x';w.URL.revokeObjectURL=()=>{};w.navigator.clipboard={writeText:t=>{w.__copied=t;return Promise.resolve()}};if(seed)w.localStorage.setItem('agency_planner_v3',seed);}});
@@ -32,7 +33,7 @@ const boot=(url,seed)=>new JSDOM(html,{runScripts:'dangerously',pretendToBeVisua
  ok(/Próximo contacto/.test(T()),'la ficha tiene el bloque de próximo contacto');
  click('[data-famnextin="fam3|7"]');await sleep(150);
  let f=state().families.find(x=>x.id==='fam3');ok(!!f.next&&/^\d{4}-\d{2}-\d{2}$/.test(f.next.date),'el atajo «En 1 semana» fija la fecha');
- const ayer=new Date(Date.now()-864e5).toISOString().slice(0,10);
+ const ayer=iso(Date.now()-864e5);
  set('#fm-next',ayer);set('#fm-nextnote','Preguntar por la luna de miel');click('[data-famsave]');await sleep(150);
  f=state().families.find(x=>x.id==='fam3');ok(f.next.date===ayer&&f.next.note==='Preguntar por la luna de miel','guarda fecha y motivo con la ficha');
  await go('#panel');ok(/Contactar · Pareja Pérez/.test(T())&&/vencido hace/.test(T()),'un contacto vencido aparece en «Para hacer hoy»');
@@ -40,7 +41,7 @@ const boot=(url,seed)=>new JSDOM(html,{runScripts:'dangerously',pretendToBeVisua
  f=state().families.find(x=>x.id==='fam3');ok(!f.next&&f.notes.some(n=>/Contactado el/.test(n.t)),'«Ya lo contacté» limpia la fecha y lo anota');
  // ---- recontacto automático
  const s0=state();s0.families.find(x=>x.id==='fam2').next=null;
- const g=s0.clients.find(x=>x.famId==='fam2');const y=new Date(Date.now()-420*864e5);g.start=y.toISOString().slice(0,10);g.end=new Date(y.getTime()+5*864e5).toISOString().slice(0,10);g.days=[];
+ const g=s0.clients.find(x=>x.famId==='fam2');const y=new Date(Date.now()-420*864e5);g.start=y.toISOString().slice(0,10);g.end=iso(y.getTime()+5*864e5);g.days=[];
  w.localStorage.setItem('agency_planner_v3',JSON.stringify(s0));w.location.reload&&0;
  const dom2=boot('https://x.test/?notour#familia-fam2',JSON.stringify(s0));await sleep(900);const d2=dom2.window.document;
  const T2=()=>{const b=d2.body.cloneNode(true);b.querySelectorAll('script').forEach(x=>x.remove());return b.textContent};
@@ -66,12 +67,12 @@ const boot=(url,seed)=>new JSDOM(html,{runScripts:'dangerously',pretendToBeVisua
  click('[data-docdel]');await sleep(100);ok(state().clients.find(x=>x.id==='c1').docs.length===n0,'y lo puede quitar');
  set('#sg-stage','cotizado');await sleep(120);ok(state().clients.find(x=>x.id==='c1').stage==='cotizado'&&!/Seña pagada/.test(d.querySelector('.tabs').parentNode.textContent+''),'cambia la etapa a mano');
  // ---- alerta de documentación pendiente
- const s1=state();const cc=s1.clients.find(x=>x.id==='c1');const sd=new Date(Date.now()+20*864e5).toISOString().slice(0,10);cc.start=sd;cc.end=new Date(Date.now()+25*864e5).toISOString().slice(0,10);cc.days=[];s1.cases=[];s1.clients.forEach(x=>{x.pay=null;});
+ const s1=state();const cc=s1.clients.find(x=>x.id==='c1');const sd=iso(Date.now()+20*864e5);cc.start=sd;cc.end=iso(Date.now()+25*864e5);cc.days=[];s1.cases=[];s1.clients.forEach(x=>{x.pay=null;});
  const dom3=boot('https://x.test/?notour#panel',JSON.stringify(s1));await sleep(900);const d3=dom3.window.document;
  ok(/Documentación pendiente · Familia Rodríguez/.test(d3.body.textContent)&&/Viajan en 20 días/.test(d3.body.textContent),'a 20 días del viaje, avisa que falta documentación');
  dom3.window.close();
  // ---- postviaje
- const s2=state();const c4=s2.clients.find(x=>x.id==='c4');c4.start=new Date(Date.now()-12*864e5).toISOString().slice(0,10);c4.end=new Date(Date.now()-6*864e5).toISOString().slice(0,10);c4.days=[];s2.cases=[];s2.clients.forEach(x=>{x.pay=null;});
+ const s2=state();const c4=s2.clients.find(x=>x.id==='c4');c4.start=iso(Date.now()-12*864e5);c4.end=iso(Date.now()-6*864e5);c4.days=[];s2.cases=[];s2.clients.forEach(x=>{x.pay=null;});
  const dom4=boot('https://x.test/?notour#panel',JSON.stringify(s2));await sleep(900);const w4=dom4.window,d4=w4.document;
  ok(/Pedile cómo les fue · Familia Torres/.test(d4.body.textContent),'pasados 6 días del viaje, sugiere pedir el postviaje');
  w4.location.hash='#cliente-c4';await sleep(250);d4.querySelector('[data-tab="seg"]').click();await sleep(150);

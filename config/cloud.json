@@ -1,0 +1,5 @@
+{
+  "url": "https://xshmnkzbjjdqwslutslh.supabase.co",
+  "key": "sb_publishable_wbdsAlt-5z0N69EGbgm9gA_ZRLtELIJ",
+  "note": "La clave publishable es pública por diseño (va en el navegador); lo que protege los datos son las políticas RLS y el login. La service role key NUNCA va acá: vive solo en el servidor de Supabase."
+}

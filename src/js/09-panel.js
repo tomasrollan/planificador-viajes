@@ -60,7 +60,7 @@ function vPanel(){
     h+='</table></div>'; }
   h+='</section>';
   h+=freshSection();
-  h+='<details class="sec bkp"><summary>Copia de seguridad y datos de la demo</summary><div class="row" style="margin-top:12px"><button class="btn line sm" data-export="1">Exportar copia (JSON)</button><label class="btn line sm" for="imp-file" style="cursor:pointer">Importar copia</label><input type="file" id="imp-file" accept=".json,application/json" style="position:absolute;width:1px;height:1px;opacity:0"><button class="btn line sm" data-resetdemo="1">Restablecer datos de la demo</button></div><div class="tiny muted" style="margin-top:8px">Los datos viven en este navegador: exportá una copia de vez en cuando. Importar reemplaza todo lo actual.</div></details></main>';
+  h+='<details class="sec bkp"><summary>'+(CL.mode==='agency'?'Copia de seguridad':'Copia de seguridad y datos de la demo')+'</summary><div class="row" style="margin-top:12px"><button class="btn line sm" data-export="1">Exportar copia (JSON)</button>'+(CL.mode==='agency'?'':'<label class="btn line sm" for="imp-file" style="cursor:pointer">Importar copia</label><input type="file" id="imp-file" accept=".json,application/json" style="position:absolute;width:1px;height:1px;opacity:0"><button class="btn line sm" data-resetdemo="1">Restablecer datos de la demo</button>')+'</div><div class="tiny muted" style="margin-top:8px">'+(CL.mode==='agency'?'Tus datos están guardados en la nube y se sincronizan solos. Podés exportar una copia cuando quieras como resguardo extra.':'Los datos viven en este navegador: exportá una copia de vez en cuando. Importar reemplaza todo lo actual.')+'</div></details></main>';
   return h;
 }
 

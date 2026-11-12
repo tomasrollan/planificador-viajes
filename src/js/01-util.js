@@ -3,9 +3,15 @@ var $=function(s,r){return (r||document).querySelector(s)};
 var esc=Html.esc, html=Html.html, raw=Html.raw;
 var uid=function(){return Math.random().toString(36).slice(2,9)};
 var mem={};
-var store={get:function(k){try{var v=localStorage.getItem(k);return v?JSON.parse(v):(mem[k]||null)}catch(e){return mem[k]||null}},
-  set:function(k,v){mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 var KEY='agency_planner_v3', PKEY='agency_planner_prefs';
+/* Nube: modo 'local' (todo en este navegador, como siempre), 'agency' (login + datos en la nube) o 'portal' (cliente con su link).
+   Se decide al cargar. En jsdom y con ?local queda en modo local. El portal NUNCA lee ni escribe el almacenamiento local de la agencia. */
+var CL={mode:'local',on:false,cfg:window.CLOUD_CFG||null,gate:null};
+(function(){ var c=CL.cfg, ua=navigator.userAgent||''; if(!c||!c.url||!c.key) return;
+  if(!window.CLOUD_FORCE&&(/jsdom/i.test(ua)||/[?&]local(=|&|$)/.test(location.search))) return;
+  CL.on=true; CL.mode=location.hash.indexOf('#portal-')===0?'portal':'agency'; })();
+var store={get:function(k){ if(k===KEY&&CL.mode==='portal') return null; try{var v=localStorage.getItem(k);return v?JSON.parse(v):(mem[k]||null)}catch(e){return mem[k]||null}},
+  set:function(k,v){ if(k===KEY&&CL.mode==='portal'){ if(CL.portalDirty) CL.portalDirty(); return; } mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(e){} if(k===KEY&&CL.mode==='agency'&&CL.dirty) CL.dirty(); }};
 function prefs(){ return store.get(PKEY)||{}; }
 function setPref(k,v){ var p=prefs(); p[k]=v; store.set(PKEY,p); }
 var TRX=Translate.create(null);

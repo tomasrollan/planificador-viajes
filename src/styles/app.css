@@ -457,3 +457,11 @@ html[data-theme="uor"] .bit.pq.paid{background:var(--ok-soft)}
   .pdoc h2{break-after:avoid}
   .pdoc *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+/* estado de la nube (agencia) */
+.cloudchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line,#dbe3ee);background:#fff;color:var(--ok,#1b7a4b);border-radius:999px;padding:5px 11px;font:700 12px/1 inherit;cursor:pointer}
+.cloudchip svg{width:14px;height:14px}
+.cloudchip.warn{color:#9a6200;border-color:#ecd6a3;background:#fff8e6}
+.cloudchip.err{color:var(--rose,#b4233c);border-color:#f0b9c3;background:#fff0f3}
+.cloudchip.sync{color:var(--slate600,#475569)}
+@media (max-width:640px){.cloudchip span{display:none}.cloudchip{padding:7px}}

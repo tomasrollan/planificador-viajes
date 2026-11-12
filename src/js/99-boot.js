@@ -9,5 +9,6 @@
     S.seq=Math.max(S.seq||0,d.seq||0); S.uorDemoSeeded=true; save();
   }catch(e){}
 })();
-render();
-try{ filesGc(); }catch(e){}
+if(CL.mode==='agency') clStartAgency();
+else if(CL.mode==='portal') clPortalBoot();
+else { render(); try{ filesGc(); }catch(e){} }

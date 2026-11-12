@@ -53,9 +53,11 @@ Object.keys(MF).forEach((k,i)=>{blocks+='<script type="application/json" id="d-m
 const LIBFIRST=['dates.js','rules.js','universal.js','html.js','translate.js'];   // módulos de los que dependen otros: van primero
 const libFiles=fs.readdirSync(path.join(R,'lib')).filter(f=>f.endsWith('.js')).sort();
 const lib=LIBFIRST.concat(libFiles.filter(f=>LIBFIRST.indexOf(f)<0)).map(f=>rd('lib/'+f)).join('\n');
+function cloudCfg(){ try{ const c=JSON.parse(rd('config/cloud.json')); return process.env.NO_CLOUD==='1'?null:{url:c.url,key:c.key}; }catch(e){ return null; } }
 const data=[ lib,
   'window.JDATA=function(id){var e=document.getElementById("d-"+id);return e?JSON.parse(e.textContent):null};',
   'window.PHOTOS=JDATA("photos")||{};', rd('data/catalog.js'), rd('data/menus.js'), rd('data/catalog-uor.js'),
+  'window.CLOUD_CFG='+JSON.stringify(cloudCfg())+';',
   '(function(){var h=JDATA("horarios")||{};window.HORARIOS=h.data||{};window.HORARIOS_AT=h.at;window.HORARIOS_WEEK=h.week;})();' ].join('\n');
 const js=fs.readdirSync(path.join(R,'src/js')).filter(f=>f.endsWith('.js')).sort().map(f=>rd('src/js/'+f)).join('');
 const html=rd('src/index.html').replace('/*__CSS__*/',()=>rd('src/styles/app.css')).replace('/*__DATA__*/',()=>data).replace('/*__JS__*/',()=>js).replace('<!--__BLOCKS__-->',()=>blocks);
