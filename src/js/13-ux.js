@@ -10,7 +10,7 @@ function agencyTzName(){ return (S.agency&&S.agency.tzName)||'Argentina'; }
 function flToArg(iso){ try{ return Dates.parkToLocal(iso,6,0,agencyTz()).time; }catch(e){ return '8:00'; } }
 var algList=Rules.algList;
 var algText=Rules.algText;
-function getQueue(){ return Rules.queue(S.clients,RID).map(function(x){ x.m=MEALS.filter(function(mm){return mm[0]===x.m})[0]; return x; }); }
+function getQueue(){ return Rules.queue(S.clients.filter(function(c){ return !c.cancel; }),RID).map(function(x){ x.m=MEALS.filter(function(mm){return mm[0]===x.m})[0]; return x; }); }
 var progress=Rules.progress;
 function downloadFile(name,text,type){ var fallback=function(){ try{ var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type:type})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(function(){ a.remove(); },500); toast('Descargado: '+name); }catch(e){ toast('Este navegador no permite descargar desde acá'); } };
   try{ if(window.claude&&window.claude.use){ window.claude.use('downloads').then(function(dl){ if(!dl) return fallback(); return dl.save({filename:name,data:text}).then(function(){ toast('Guardado: '+name); },function(){ toast('No se guardó el archivo'); }); },function(){ fallback(); }); return; } }catch(e){} fallback(); }

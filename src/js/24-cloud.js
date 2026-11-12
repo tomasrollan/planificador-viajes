@@ -238,7 +238,7 @@ function clPortalOpen(pin,silent){
   if(!silent) clGateLoading('Entrando…');
   clPortalCall('open').then(function(j){ try{ sessionStorage.setItem('portal_pin_'+CL.token,CL.pin); }catch(e){} clPortalApply(j.view); render(); clPortalLoop(); },function(e){
     try{ sessionStorage.removeItem('portal_pin_'+CL.token); }catch(x){}
-    clPortalGate(e.status===401?'Código incorrecto. Revisalo o pedíselo a la agencia.':e.status===429?'Demasiados intentos. Esperá 15 minutos o pedile ayuda a la agencia.':'No se pudo conectar. Revisá tu internet y probá de nuevo.'); });
+    clPortalGate(e.status===403?'Este viaje ya no está disponible. Consultá con la agencia.':e.status===401?'Código incorrecto. Revisalo o pedíselo a la agencia.':e.status===429?'Demasiados intentos. Esperá 15 minutos o pedile ayuda a la agencia.':'No se pudo conectar. Revisá tu internet y probá de nuevo.'); });
 }
 function clPortalBoot(){
   CL.token=clPortalToken(); UI.role='cliente'; var pin=null; try{ pin=sessionStorage.getItem('portal_pin_'+CL.token); }catch(e){}
@@ -260,7 +260,8 @@ function clPortalSave(){
   clPortalCall('save',{patch:patch}).then(function(j){ CL.psaving=false; CL.pfail=0;
     if(CL.prev===mark){ var c=S.clients[0]; if(c) c.log=[]; clPortalApply(j.view); clSoftRender(); }
     else { clPortalBaseKeep(patch,j.view); CL.portalDirty(); }
-  },function(e){ CL.psaving=false; CL.pfail=(CL.pfail||0)+1; if(e.status===401||e.status===429){ CL.portalReady=false; clPortalGate('Tu sesión se cerró. Ingresá de nuevo tu código.'); return; }
+  },function(e){ CL.psaving=false; CL.pfail=(CL.pfail||0)+1; if(e.status===403){ CL.portalReady=false; clPortalGate('Este viaje ya no está disponible. Consultá con la agencia.'); return; }
+    if(e.status===401||e.status===429){ CL.portalReady=false; clPortalGate('Tu sesión se cerró. Ingresá de nuevo tu código.'); return; }
     if(CL.pfail===1) toast('No se pudo guardar, reintentando…'); _cpT=setTimeout(clPortalSave,Math.min(30000,4000*CL.pfail)); });
 }
 function clPortalBaseKeep(patch,view){ /* hubo cambios nuevos mientras se guardaba: se conserva lo enviado como base */ var b=CL.pbase; Object.keys(patch.fields||{}).forEach(function(k){ b.fields[k]=Cloud.canon(patch.fields[k]); }); (patch.cases||[]).forEach(function(k){ b.cases[k.id]=Cloud.canon(k); }); }

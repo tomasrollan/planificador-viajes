@@ -7,6 +7,7 @@ var SOON_DESTS=[['caribe','Caribe','sun'],['europa','Europa','calendar'],['cruce
 function fam(id){ return (S.families||[]).filter(function(f){return f.id===id})[0]; }
 function famOf(c){ return c&&c.famId?fam(c.famId):null; }
 function famTrips(f){ return S.clients.filter(function(c){return c.famId===f.id}).sort(function(a,b){return b.start.localeCompare(a.start)}); }
+function famTripsLive(f){ return famTrips(f).filter(function(c){ return !FU.isCancelled(c); }); }
 function phoneKey(p){ var d=String(p||'').replace(/\D/g,''); return d.length>=10?d.slice(-10):(d.length>=8?d:''); }
 function famCreate(o){
   S.families=S.families||[]; S.famSeq=(S.famSeq||0)+1;
@@ -20,11 +21,11 @@ function linkFamily(c,o){
   if(!f) f=famCreate({name:c.name,phone:c.phone});
   c.famId=f.id; if(!f.phone&&c.phone) f.phone=c.phone; return {f:f,existing:existing};
 }
-function famRepeat(f){ return famTrips(f).length+(f.past||[]).length>1; }
+function famRepeat(f){ return famTripsLive(f).length+(f.past||[]).length>1; }
 function famChip(c){ var f=famOf(c); if(!f) return ''; return '<div class="row" style="gap:8px;margin:-4px 0 4px"><a class="chip" href="#familia-'+f.id+'" style="text-decoration:none">'+I('user')+' '+esc(f.code)+' · Ver ficha del cliente</a>'+(famRepeat(f)?'<span class="chip gold">Cliente que repite</span>':'')+'</div>'; }
 function famBadge(c){ var f=famOf(c); return f&&famRepeat(f)?'<span class="chip gold" title="Ya viajó con la agencia">Repite</span>':''; }
-function tripState(c){ var t=todayISO(); return c.end<t?['Terminado','gray']:c.start<=t?['En viaje','ok']:['En preparación','warn']; }
-function famLast(f){ var tr=famTrips(f).filter(function(c){return c.end<todayISO()}), pa=(f.past||[]).slice().sort(function(a,b){return (b.year||0)-(a.year||0)});
+function tripState(c){ var t=todayISO(); if(FU.isCancelled(c)) return ['Cancelado','bad']; return c.end<t?['Terminado','gray']:c.start<=t?['En viaje','ok']:['En preparación','warn']; }
+function famLast(f){ var tr=famTripsLive(f).filter(function(c){return c.end<todayISO()}), pa=(f.past||[]).slice().sort(function(a,b){return (b.year||0)-(a.year||0)});
   var a=tr[0], b=pa[0]; if(a&&(!b||+a.end.slice(0,4)>=(b.year||0))) return destsLabel(a)+' · '+a.end.slice(0,4); return b?(b.dest||'Viaje')+' · '+(b.year||''):''; }
 
 /* ---------- lista de clientes ---------- */
@@ -34,7 +35,7 @@ function famFields(f){
   return [f.name,f.phone||'',f.email||'',(f.tags||[]).join(' '),f.prefs||'',f.personality||'',(f.notes||[]).map(function(n){return n.t}).join(' '),
     tr.map(function(c){ return destsLabel(c)+' '+hotelLine(c)+' '+c.travelers.map(function(t){return t.name}).join(' '); }).join(' '),(f.past||[]).map(function(p){ return (p.dest||'')+' '+(p.hotel||'')+' '+(p.year||''); }).join(' ')];
 }
-function famLatest(f){ var tr=famTrips(f), t=todayISO(); var up=tr.filter(function(c){return c.end>=t}).sort(function(a,b){return a.start.localeCompare(b.start)})[0]; return up||tr[0]||null; }
+function famLatest(f){ var tr=famTripsLive(f), t=todayISO(); if(!tr.length) tr=famTrips(f); var up=tr.filter(function(c){return c.end>=t}).sort(function(a,b){return a.start.localeCompare(b.start)})[0]; return up||tr[0]||null; }
 function famList(){
   var q=(UI.fq||'').trim(), t=todayISO();
   var L=(S.families||[]).filter(function(f){

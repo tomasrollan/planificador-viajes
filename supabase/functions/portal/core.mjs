@@ -7,7 +7,7 @@ export const MAX_LOG_APPEND = 20;
 export const MAX_NEW_CASES = 10;
 export const MAX_MSGS = 20;
 
-const PRIVATE_CLIENT_KEYS = ['pin', 'notes', 'log', 'stage', 'next', 'docs', 'post', 'famId', 'agency_id', 'budget', 'items', 'pay'];
+const PRIVATE_CLIENT_KEYS = ['pin', 'notes', 'log', 'stage', 'next', 'docs', 'post', 'famId', 'agency_id', 'budget', 'items', 'pay', 'cancel'];
 const WRITABLE = ['days', 'favs', 'intake', 'requests', 'travelers'];
 
 const isObj = (x) => x !== null && typeof x === 'object' && !Array.isArray(x);

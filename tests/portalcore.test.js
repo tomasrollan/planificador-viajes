@@ -47,6 +47,8 @@ eq(r.caseOps.length,1);eq(r.caseOps[0].data.thread.map(m=>m.id),['m0','m5']);eq(
 r=P.applyPatch(base(),[{id:'k9',cid:'otro',thread:[]}],{cases:[{id:'k9',thread:[{id:'z',by:'cliente',kind:'msg',text:'x'}]}]});eq(r.caseOps.length,0);ok(r.rejected.indexOf('case:ajeno')>=0);
 r=P.applyPatch(base(),[],{cases:[{id:'kn',title:'Pregunta',type:'Consulta',priority:'urgente!',status:'resuelto',cid:'otro',thread:[{id:'m1',by:'cliente',kind:'msg',text:'Hola'}]}]});
 eq(r.caseOps[0].op,'insert');eq(r.caseOps[0].data.cid,'c1','siempre a su propio viaje');eq(r.caseOps[0].data.status,'nuevo');eq(r.caseOps[0].data.priority,'normal');eq(r.caseOps[0].data.source,'cliente');
+// una cancelación es interna: nunca llega al portal
+r=P.portalView(Object.assign(base(),{cancel:{reason:'nopago',note:'deuda',at:1}}),[],{name:'A'});eq(r.client.cancel,undefined,'el portal no ve el motivo de cancelación');
 // tamaño y basura
 r=P.applyPatch(base(),[],{fields:{favs:{a:'x'.repeat(300000)}}});ok(r.rejected.indexOf('favs:tamaño')>=0);r=P.applyPatch(base(),[],null);eq(r.client.name,'Fam');r=P.applyPatch(base(),[],{fields:{days:'no'}});ok(r.rejected.length>0);
 console.log('portal core OK ('+n+' checks)');

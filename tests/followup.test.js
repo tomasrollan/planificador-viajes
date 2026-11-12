@@ -27,4 +27,10 @@ eq(F.postAlert({end:'2027-03-09'},today),null,'muy pronto');eq(F.postAlert({end:
 eq(F.codeNum('FAM-0012'),12);eq(F.codeNum('fam 12'),12);eq(F.codeNum('12'),12);eq(F.codeNum('#7'),7);eq(F.codeNum('Pérez'),null);eq(F.codeNum('fam-12x'),null);
 eq(F.match('FAM-0003',['Pareja Pérez'],'FAM-0003'),true);eq(F.match('3',['Pareja Pérez'],'FAM-0003'),true);eq(F.match('fam-4',['Pareja Pérez'],'FAM-0003'),false);
 eq(F.match('perez',['Pareja Pérez','Disney'],'FAM-0001'),true,'sin tildes');eq(F.match('pareja disney',['Pareja Pérez','Disney'],''),true,'todas las palabras');eq(F.match('pareja cancún',['Pareja Pérez','Disney'],''),false);eq(F.match('',['x'],''),true);
+// cancelación
+const cx={start:'2027-03-08',end:'2027-03-15',cancel:{reason:'nopago',note:'',at:1}};
+eq(F.stage(cx,today,true),'cancelado','un viaje cancelado es etapa «cancelado» aunque tenga seña');eq(F.stageLabel('cancelado'),'Cancelado');eq(F.isCancelled(cx),true);eq(F.isCancelled({}),false);eq(F.isCancelled(null),false);
+eq(F.cleanCancel({reason:'cliente',note:'  se bajó  ',at:5}),{reason:'cliente',note:'se bajó',at:5});eq(F.cleanCancel({reason:'zzz'}).reason,'otro');eq(F.cleanCancel({note:'x'.repeat(500)}).note.length,300);eq(F.cleanCancel(null),null);
+eq(F.cancelReason('nopago'),'No pagó');eq(F.cancelReason('posterga'),'Lo postergaron');eq(F.cancelReason('xx'),'Cancelado');
+eq(F.docsAlert({start:'2027-04-01',travelers:[{type:'adulto'}],cancel:{reason:'otro'}},today),null,'cancelado: sin alerta de documentos');eq(F.postAlert({end:'2027-03-05',cancel:{reason:'otro'}},today),null,'cancelado: sin pedido de postviaje');
 console.log('followup.test.js: '+n+' verificaciones OK');

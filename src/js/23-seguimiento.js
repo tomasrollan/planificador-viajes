@@ -3,9 +3,9 @@ var FU=Followup; UI.seg={doc:null};
 function fuToday(){ return todayISO(); }
 function paidSome(c){ try{ return !!(PY.hasPlan(c)&&paySum(c).paid>0); }catch(e){ return false; } }
 function stageOf(c){ return FU.stage(c,fuToday(),paidSome(c)); }
-function stageChip(c){ var k=stageOf(c), cls=k==='viajando'?'ok':k==='postviaje'?'gray':k==='consulta'?'gray':k==='cotizado'?'warn':'ok'; return '<span class="chip '+cls+'" title="Etapa del cliente">'+esc(FU.stageLabel(k))+'</span>'; }
+function stageChip(c){ var k=stageOf(c), cls=k==='cancelado'?'bad':k==='viajando'?'ok':k==='postviaje'?'gray':k==='consulta'?'gray':k==='cotizado'?'warn':'ok'; return '<span class="chip '+cls+'" title="Etapa del cliente">'+esc(FU.stageLabel(k))+'</span>'; }
 function famNext(f){ return FU.nextState(f,fuToday()); }
-function famRecontact(f){ return FU.recontact(famTrips(f).map(function(c){return {end:c.end}}).concat((f.past||[]).filter(function(p){return p.year}).map(function(p){return {end:p.year+'-12-31'}})),fuToday(),!!FU.cleanNext(f.next)); }
+function famRecontact(f){ return FU.recontact(famTripsLive(f).map(function(c){return {end:c.end}}).concat((f.past||[]).filter(function(p){return p.year}).map(function(p){return {end:p.year+'-12-31'}})),fuToday(),!!FU.cleanNext(f.next)); }
 function nextText(n){ return n.late?'vencido hace '+(-n.days)+(n.days===-1?' día':' días'):n.today?'hoy':'en '+n.days+(n.days===1?' día':' días'); }
 function nextChip(f){ var n=famNext(f); if(!n) return ''; return '<span class="chip '+(n.late?'bad':n.today||n.soon?'warn':'gray')+'" title="Próximo contacto">'+I('bell')+' Contactar '+esc(nextText(n))+'</span>'; }
 

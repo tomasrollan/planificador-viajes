@@ -294,6 +294,9 @@ table.q th{font:900 10px var(--fh);text-transform:uppercase;letter-spacing:.06em
 .cltool input{flex:1 1 220px;max-width:340px}
 .cltool .pills{flex-wrap:wrap}
 .ccard{box-shadow:none}
+.ccard.cancelled{opacity:.72;border-style:dashed}
+.cancelbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--bad-soft);color:var(--bad);border:1px solid var(--bad-line);border-radius:12px;padding:12px 14px;margin:6px 0 12px;font-size:14px}
+.cancelbar .muted{color:inherit;opacity:.8}
 .cnext{font-weight:800;font-size:14px;color:var(--navy,#002a66)}
 .cnext.warn{color:#b45309}
 .cnext.ok{color:#047857}

@@ -52,6 +52,7 @@ Deno.serve(async (req: Request) => {
   const good = !!row && pinOk(row.data, pin);
   await db.from("portal_attempts").insert({ token, ok: good });
   if (!good) return json({ error: "link o código incorrecto", code: "bad_pin" }, 401);
+  if (row!.data && row!.data.cancel) return json({ error: "Este viaje ya no está disponible. Consultá con la agencia.", code: "cancelled" }, 403);
 
   const agencyId = row!.agency_id as string;
 
@@ -73,6 +74,7 @@ Deno.serve(async (req: Request) => {
   for (let i = 0; i < 4; i++) {
     const cur = i === 0 ? row! : await findClient(token);
     if (!cur) return json({ error: "viaje no encontrado" }, 404);
+    if (cur.data && cur.data.cancel) return json({ error: "Este viaje ya no está disponible. Consultá con la agencia.", code: "cancelled" }, 403);
     const cases = await casesOf(agencyId, cur.id);
     const res = applyPatch({ ...cur.data, agency_id: agencyId }, cases.map((c: any) => c.data), body.patch, null);
     const { client } = res;

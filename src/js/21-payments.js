@@ -29,7 +29,7 @@ function payLine(c){
 }
 /* avisos para «Para hacer hoy» */
 function payAlerts(){
-  var out=[]; S.clients.forEach(function(c){ PY.alerts(c.pay,payToday()).forEach(function(a){
+  var out=[]; S.clients.forEach(function(c){ if(FU.isCancelled(c)) return; PY.alerts(c.pay,payToday()).forEach(function(a){
     out.push({p:a.late?1:4,ic:'bag',cls:a.late?'bad':'warn',t:(a.late?'Cuota vencida · ':'Cuota por vencer · ')+c.name,s:a.q.n+' · '+PY.money(a.q.amount)+' · '+PY.dueText(a.days),b:'<a class="btn sm" href="#cliente-'+c.id+'" data-openpay="'+c.id+'">Ver pagos</a>'}); }); });
   return out;
 }
