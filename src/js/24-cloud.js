@@ -62,7 +62,7 @@ function clGateLogin(msg,keep){
     '<label class="f" style="text-align:left">Mail</label><input type="email" id="cl-email" autocomplete="username" inputmode="email" value="'+esc((CL.sess&&CL.sess.email)||'')+'">'+
     '<label class="f" style="text-align:left;margin-top:10px">Contraseña</label>'+pwField('cl-pass','current-password')+
     '<div id="cl-err" class="small" style="color:var(--rose);min-height:22px;margin-top:6px;font-weight:600">'+esc(msg||'')+'</div>'+
-    '<button class="btn" style="width:100%;margin-top:6px;padding:13px" data-cl-login="'+(keep?'keep':'new')+'">Entrar</button><div class="tiny muted" style="margin-top:12px">¿No tenés acceso? Pedíselo a quien administra la agencia.</div>');
+    '<button class="btn" style="width:100%;margin-top:6px;padding:13px" data-cl-login="'+(keep?'keep':'new')+'">Entrar</button><button class="btn line" style="width:100%;margin-top:10px;padding:13px" data-cl-demo="1">'+I('sparkles')+' Ver la versión demo</button><div class="tiny muted" style="margin-top:12px">¿No tenés acceso? Pedíselo a quien administra la agencia.</div>');
   render(); var e=$('#cl-email'); if(e&&!e.value) e.focus(); else if($('#cl-pass')) $('#cl-pass').focus();
 }
 function clGateMsg(title,text,btn){ CL.gate=clGateShell('<h2 style="font-weight:900">'+esc(title)+'</h2><p class="muted">'+esc(text)+'</p>'+(btn?'<button class="btn" style="width:100%;margin-top:6px" '+btn[1]+'>'+esc(btn[0])+'</button>':'')); render(); }
@@ -70,7 +70,7 @@ function clGateLoading(t){ CL.gate=clGateShell('<h2 style="font-weight:900">'+es
 function clGateChoice(name,hasLocal){
   CL.gate=clGateShell('<h2 style="font-weight:900">'+esc(name)+' todavía está vacía en la nube</h2><p class="muted">¿Cómo querés empezar?</p>'+
     '<button class="btn" style="width:100%;margin-top:6px;padding:13px" data-cl-empty="1">Empezar con la agencia vacía</button>'+
-    (hasLocal?'<button class="btn line" style="width:100%;margin-top:10px;padding:13px" data-cl-import="1">Subir los datos que hay en este navegador (demo)</button><div class="tiny muted" style="margin-top:10px">Los datos de demo incluyen familias y viajes de ejemplo.</div>':''));
+    (hasLocal&&/[?&]importdemo/.test(location.search)?'<button class="btn line" style="width:100%;margin-top:10px;padding:13px" data-cl-import="1">Subir los datos que hay en este navegador (demo)</button><div class="tiny muted" style="margin-top:10px">Los datos de demo incluyen familias y viajes de ejemplo.</div>':''));
   render();
 }
 
@@ -160,9 +160,9 @@ function clChoose(importLocal){
 
 /* ---------- sincronización ---------- */
 var _clT=null, _clLoop=false;
-CL.dirty=function(){ if(CL.mode!=='agency'||!CL.eng) return; clearTimeout(_clT); if(CL.st!=='sync') clSetStatus('pending'); _clT=setTimeout(function(){ CL.syncNow(); },1500); };
+CL.dirty=function(){ if(CL.mode!=='agency'||!CL.eng||CL.demo) return; clearTimeout(_clT); if(CL.st!=='sync') clSetStatus('pending'); _clT=setTimeout(function(){ CL.syncNow(); },1500); };
 CL.syncNow=function(){
-  if(!CL.eng) return Promise.resolve();
+  if(!CL.eng||CL.demo) return Promise.resolve();
   clSetStatus('sync');
   return clUploads().then(function(){ return CL.eng.sync(); }).then(function(r){
     if(r&&r.busy) return r;
@@ -189,11 +189,22 @@ function clUploads(){
 }
 (function(){
   var put=Files.put, get=Files.get;
-  Files.put=function(id,blob){ return put(id,blob).then(function(ok){ if(CL.mode==='agency'&&CL.agency){ var l=clUpList(); if(l.indexOf(id)<0){ l.push(id); clUpSet(l); } clUpload(id,blob); } return ok; }); };
+  Files.put=function(id,blob){ return put(id,blob).then(function(ok){ if(CL.mode==='agency'&&CL.agency&&!CL.demo){ var l=clUpList(); if(l.indexOf(id)<0){ l.push(id); clUpSet(l); } clUpload(id,blob); } return ok; }); };
   Files.get=function(id){ return get(id).then(function(b){
     if(b||CL.mode!=='agency'||!CL.agency) return b;
     return clAuthed('/storage/v1/object/authenticated/comprobantes/'+encodeURIComponent(CL.agency)+'/'+encodeURIComponent(id),{blob:true}).then(function(bl){ return put(id,bl).then(function(){ return bl; }); },function(){ return null; }); }); };
 })();
+
+/* ---------- versión demo: datos de ejemplo en memoria; no toca ni sincroniza la agencia real ---------- */
+function clDemoState(){ var d=Repo.migrate(demo()); d.agency=Object.assign({},d.agency,{id:'demo',name:'Agencia Demo',tagline:'Versión demo'}); return d; }
+function clDemoStart(){ clearTimeout(_clT); CL.demo=true; CL.gate=null; dmem={}; S=clDemoState(); repo.set(S); UI.role='agus'; UI.preview=false; UI.cid=null; UI.tab='agenda'; location.hash='panel'; render(); window.scrollTo(0,0); }
+function clDemoEnter(){
+  if(!CL.eng) return clDemoStart();
+  var tries=0, wait=function(){ return CL.syncNow().then(function(r){ if(r&&r.busy&&tries++<6) return new Promise(function(x){ setTimeout(x,600); }).then(wait); }); };
+  wait().then(clDemoStart,clDemoStart);   // primero se termina de subir lo que haya de la agencia real
+}
+function clDemoExit(){ CL.demo=false; dmem={}; location.hash=''; location.reload(); }
+function clDemoReset(){ dmem={}; S=clDemoState(); repo.set(S); UI.cid=null; location.hash='panel'; render(); toast('Demo restablecida'); }
 
 /* ---------- menú de estado y cierre de sesión ---------- */
 function clMenu(){
@@ -286,6 +297,9 @@ openFile=function(id,name){
 /* ---------- clics y teclado ---------- */
 CLICK.push(
  {a:'data-cl-eye', f:function(v,t,at,e){ var i=$('#'+v); if(!i) return; var show=i.type==='password'; i.type=show?'text':'password'; var b=t.closest('[data-cl-eye]'); b.innerHTML=show?EYEOFF:EYE; b.setAttribute('aria-label',show?'Ocultar contraseña':'Mostrar contraseña'); b.title=b.getAttribute('aria-label'); i.focus(); }},
+ {a:'data-cl-demo', f:function(){ clDemoEnter(); }},
+ {a:'data-cl-demoexit', f:function(){ clDemoExit(); }},
+ {a:'data-cl-demoreset', f:function(){ clDemoReset(); }},
  {a:'data-cl-login', f:function(v,t,at,e){ clLogin(($('#cl-email')||{}).value,($('#cl-pass')||{}).value,v==='keep'); }},
  {a:'data-cl-setpw', f:function(){ clSetPw(); }},
  {a:'data-cl-home', f:function(){ CL.gate=null; clStartAgency(); }},

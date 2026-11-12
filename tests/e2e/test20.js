@@ -44,7 +44,7 @@ const T=d=>{const b=d.body.cloneNode(true);b.querySelectorAll('script').forEach(
 const mk=dom=>{const w=dom.window,d=w.document;return {w,d,click:s=>{const e=typeof s==='string'?d.querySelector(s):s;if(!e)throw new Error('no existe '+s);e.click()},set:(sel,v)=>{const e=d.querySelector(sel);if(!e)throw new Error('no existe '+sel);e.value=v;e.dispatchEvent(new w.Event('input',{bubbles:true}));e.dispatchEvent(new w.Event('change',{bubbles:true}))},text:()=>T(d),ls:k=>w.localStorage.getItem(k)}};
 
 // ================= agencia: login =================
-let A=mk(boot('https://x.test/?notour#panel'));await sleep(600);
+let A=mk(boot('https://x.test/?notour&importdemo#panel'));await sleep(600);
 ok(A.d.querySelector('#cl-email')&&!/Panel|Clientes/.test(A.d.querySelector('.hdr')?A.d.querySelector('.hdr').textContent:''),'sin sesión: se ve el login y nada de la app');
 ok(!/Rodríguez/.test(A.text()),'los datos locales no se ven detrás del login');
 A.set('#cl-email','agus@test.invalid');A.set('#cl-pass','mala');A.click('[data-cl-login]');await sleep(300);
@@ -104,10 +104,33 @@ ok(Object.values(JSON.parse(B.ls('agency_planner_v3')).clients.find(c=>c.id==='c
 const pinKey='portal_pin_'+tok;ok(C.w.sessionStorage.getItem(pinKey)===pin,'el código queda solo en la sesión de la pestaña');
 // bloqueo por demasiados intentos del lado del servidor se muestra bien
 // ================= comprobantes =================
+// ================= versión demo (con sesión) =================
+{const keep={};['agency_cloud_session','agency_cloud_sync','agency_planner_v3'].forEach(k=>{keep[k]=A.w.localStorage.getItem(k)});
+const A0=A;A=mk(boot('https://x.test/?notour#panel',keep));await sleep(1200);
+const before=JSON.stringify(rows),lsBefore=A.ls('agency_planner_v3');
+A.click('[data-cl-demo]');await sleep(900);
+ok(!!A.d.querySelector('.demobar')&&/Volver a mi agencia/.test(A.d.querySelector('.demobar').textContent),'la versión demo muestra su cartel y el botón para volver a la agencia');
+ok(/Agencia Demo/.test(A.d.querySelector('.hdr').textContent)&&!A.d.querySelector('[data-cl-logout]')&&!A.d.querySelector('#cloudbox'),'en la demo no hay cierre de sesión ni estado de la nube');
+A.w.location.hash='#cliente-c1';await sleep(250);A.click('[data-tab="datos"]');await sleep(100);A.click('[data-cx-ask="c1"]');await sleep(100);A.click('[data-cx-do="c1"]');await sleep(300);
+ok(!!A.d.querySelector('.cancelbar'),'en la demo se puede trabajar normalmente (cancelar un viaje)');
+await sleep(2500);
+ok(JSON.stringify(rows)===before,'nada de lo hecho en la demo llega a la nube');
+ok(A.ls('agency_planner_v3')===lsBefore,'ni se toca lo guardado de la agencia real en este dispositivo');
+A.click('[data-cl-demoreset]');await sleep(300);A.w.location.hash='#cliente-c1';await sleep(250);
+ok(!A.d.querySelector('.cancelbar'),'«Restablecer demo» deja los datos de ejemplo como nuevos');
+A.w.close();A=A0;
+}
 // ================= cierre de sesión =================
 A.click('[data-cl-logout]');await sleep(1500);
 ok(!!A.d.querySelector('#cl-email')&&!A.ls('agency_cloud_session')&&!A.ls('agency_planner_v3')&&!A.ls('agency_cloud_sync'),'cerrar sesión borra los datos de este dispositivo y vuelve al login');
 {const pw=A.d.querySelector('#cl-pass'),eye=A.d.querySelector('[data-cl-eye="cl-pass"]');ok(!!eye&&pw.type==='password','el login tiene el ojito y la contraseña está oculta');eye.click();ok(pw.type==='text','el ojito muestra la contraseña');A.d.querySelector('[data-cl-eye="cl-pass"]').click();ok(pw.type==='password','y la vuelve a ocultar');}
+// ================= versión demo (sin iniciar sesión) =================
+{const before=JSON.stringify(rows);
+A.click('[data-cl-demo]');await sleep(900);
+ok(!!A.d.querySelector('.demobar')&&/Salir de la demo/.test(A.d.querySelector('.demobar').textContent)&&/Rodríguez/.test(A.text()),'desde el login se entra a la demo sin cuenta y con datos de ejemplo');
+ok(!A.ls('agency_planner_v3')&&!A.ls('agency_cloud_session'),'sin cuenta, la demo no guarda nada en el dispositivo');
+await sleep(2000);ok(JSON.stringify(rows)===before,'y no toca la nube');
+}
 ok(Object.values(rows).filter(r=>r.kind==='client').length===5,'y en la nube siguen intactos');
 // ================= el modo local no cambia =================
 const L=mk(new JSDOM(html,{runScripts:'dangerously',pretendToBeVisual:true,url:'https://x.test/?notour#panel',beforeParse(w){w.scrollTo=()=>{};w.addEventListener('error',e=>errs.push(String(e.message)))}}));await sleep(500);

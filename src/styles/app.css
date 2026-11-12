@@ -30,6 +30,8 @@ svg.i.f{fill:currentColor}
 .seg{display:inline-flex;background:var(--ice);border:1px solid var(--line);border-radius:14px;padding:3px}
 .seg button{border:0;background:transparent;color:var(--blue);padding:7px 13px;border-radius:11px;font-weight:700;font-size:12.5px;cursor:pointer}
 .seg button.on{background:var(--blue);color:#fff;box-shadow:0 2px 6px rgba(var(--blue-rgb),.3)}
+.demobar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:#fff4d6;color:#6b4e00;border-bottom:1px solid #f0dca0;padding:8px 14px;font-size:13px}
+.demobar svg{width:14px;height:14px;vertical-align:-2px}
 .demo-note{background:var(--gold-soft);color:#7a5800;font-size:12px;padding:6px 14px;text-align:center;border-bottom:1px solid #f0dca0}
 /* cards / sections */
 .card{background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);padding:20px}

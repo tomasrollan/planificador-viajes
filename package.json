@@ -1,6 +1,6 @@
 {
   "name": "planificador-viajes",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "private": true,
   "description": "Planificador de comidas para agencias de viajes (Disney + Universal Orlando)",
   "scripts": {
